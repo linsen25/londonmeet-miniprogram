@@ -1,0 +1,15 @@
+node_modules/
+project.private.config.json
+
+# Local IDE / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Logs and temporary files
+*.log
+*.tmp
+
+# Generated screenshots / local exports
+docs/archive/

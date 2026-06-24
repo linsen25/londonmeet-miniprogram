@@ -1,0 +1,30 @@
+.mf-pill {
+  width: 100%;
+  display: flex;
+  align-items: center; /* ✅ 整行垂直居中 */
+  gap: 6rpx;
+}
+
+.mf-pill__track {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+/* ✅ label 用 view，强制和点赞同一条线 */
+.mf-pill__label {
+  min-width: 56rpx;
+  height: 24rpx;              /* ✅ 固定高度 */
+  display: flex;
+  align-items: center;        /* ✅ 垂直居中 */
+  justify-content: flex-end;  /* ✅ 靠右 */
+}
+
+.mf-pill__labelText {
+  font-size: 22rpx;
+  line-height: 24rpx;         /* ✅ line-height = label height */
+  white-space: nowrap;
+  opacity: 0.92;
+}

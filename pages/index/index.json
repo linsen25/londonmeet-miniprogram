@@ -1,0 +1,17 @@
+{
+  "usingComponents": {
+    "activity-view": "/components/activity/activity",
+    "home-view": "/components/home/home",
+    "mf-button": "/components/mf-button/index",
+    "post-view": "/components/post-view/index",
+    "createpost-view": "/components/createpost-view/index",
+    "pending-review": "/components/pending-review/index",
+    "favorite-activities": "/components/favorite-activities/index",
+    "history-activities": "/components/history-activities/index",
+    "notification-center": "/components/notification-center/index",
+    "review-rate": "/components/review-rate/rate",
+    "search": "/components/search/search",
+    "feedback-view": "/components/feedback-view/index",
+    "van-icon": "@vant/weapp/icon/index"
+  }
+}

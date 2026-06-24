@@ -1,0 +1,743 @@
+.home-root {
+  height: 100vh;
+  width: 100%;
+  background: rgb(33, 33, 33);
+  box-sizing: border-box;
+}
+
+.home-page {
+  position: relative; /* ✅ overlay 定位参照 */
+  padding: 0 0 120rpx;
+  box-sizing: border-box;
+}
+/* 上下堆叠 */
+.home-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+/* =========================
+   Profile Hero Card
+   ========================= */
+
+   .profile-hero{
+    width: 100%;
+    height: 100%;
+    border-radius: 0 0 18rpx 18rpx;
+    overflow: hidden;
+    position: relative;
+  
+    background-size: cover;
+    background-position: center;
+  
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding-top: 18rpx;            /* 顶部留一点 */
+  padding-bottom: 18rpx;         /* 底部留一点 */
+  box-sizing: border-box;
+  }
+  
+  /* 暗遮罩：保证字清晰 */
+  .profile-hero::before{
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(0,0,0,0.15), rgba(0,0,0,0.75));
+    z-index: 1;
+  }
+  
+  /* 左上角更多 */
+  .profile-more{
+    position: absolute;
+    top: 18rpx;
+    left: 18rpx;
+    width: 64rpx;
+    height: 64rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 20;
+  }
+
+  .profile-notification{
+    position: absolute;
+    top: 24rpx;
+    right: 24rpx;
+    width: 64rpx;
+    height: 64rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 20;
+  }
+
+  .top-icon-dot{
+    position: absolute;
+    top: 10rpx;
+    right: 10rpx;
+    width: 14rpx;
+    height: 14rpx;
+    border-radius: 999rpx;
+    background: #FF3B30;
+    border: 2rpx solid rgba(0,0,0,0.45);
+    box-sizing: border-box;
+  }
+
+  .notification-dot{
+    position: absolute;
+    right: -4rpx;
+    top: -4rpx;
+    min-width: 28rpx;
+    height: 28rpx;
+    padding: 0 7rpx;
+    box-sizing: border-box;
+    border-radius: 9999rpx;
+    background: #FF3B30;
+    color: #fff;
+    font-size: 18rpx;
+    font-weight: 900;
+    line-height: 28rpx;
+    text-align: center;
+  }
+  
+  .profile-body{
+    position: relative;
+    z-index: 2;
+    padding: 110rpx 26rpx 26rpx;   /* top right/left bottom */
+    box-sizing: border-box;
+  }
+  
+  /* 头像+名字 */
+  .profile-top{
+    display: flex;
+    align-items: center;
+    gap: 20rpx;
+  }
+  
+  .profile-avatar{
+    width: 140rpx;
+    height: 140rpx;
+    border-radius: 9999rpx;
+    overflow: hidden;
+    background: rgba(255,255,255,0.18);
+    box-shadow: 0 10rpx 30rpx rgba(0,0,0,0.25);
+  }
+  
+  .avatar-img{
+    width: 100%;
+    height: 100%;
+  }
+  
+  .profile-top-right{
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10rpx;
+  }
+  
+  .profile-name{
+    color: #fff;
+    font-size: 44rpx;
+    font-weight: 900;
+    line-height: 1.1;
+  }
+  
+  .profile-id{
+    color: rgba(255,255,255,0.75);
+    font-size: 26rpx;
+    font-weight: 600;
+  }
+  
+  /* motto */
+  .profile-motto{
+    margin-top: 14rpx;
+    color: rgba(255,255,255,0.92);
+    font-size: 30rpx;
+    font-weight: 700;
+    line-height: 1.3;
+  }
+  
+  /* pills */
+  .profile-pills{
+    margin-top: 14rpx;
+    display: flex;
+    gap: 14rpx;
+    flex-wrap: wrap;
+  }
+  
+  .pill{
+    max-width: 220rpx;
+    padding: 10rpx 18rpx;
+    border-radius: 9999rpx;
+    background: rgba(0,0,0,0.35);
+    color: rgba(255,255,255,0.92);
+    font-size: 24rpx;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+.edit-profile-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 12000;
+  display: flex;
+  align-items: flex-end;
+  background: rgba(0,0,0,0.45);
+}
+
+.edit-profile-panel {
+  width: 100%;
+  padding: 28rpx 24rpx calc(32rpx + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+  border-radius: 24rpx 24rpx 0 0;
+  background: #2E2E2E;
+  display: flex;
+  flex-direction: column;
+  gap: 22rpx;
+}
+
+.edit-profile-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.edit-profile-title {
+  color: #fff;
+  font-size: 34rpx;
+  font-weight: 900;
+}
+
+.edit-profile-close {
+  width: 64rpx;
+  height: 64rpx;
+  color: rgba(255,255,255,0.82);
+  font-size: 48rpx;
+  line-height: 58rpx;
+  text-align: center;
+}
+
+.edit-cover-preview {
+  position: relative;
+  height: 220rpx;
+  border-radius: 16rpx;
+  overflow: hidden;
+  background-size: cover;
+  background-position: center;
+  padding: 18rpx;
+  box-sizing: border-box;
+}
+
+.edit-cover-text {
+  position: absolute;
+  right: 18rpx;
+  bottom: 18rpx;
+  padding: 10rpx 18rpx;
+  border-radius: 999rpx;
+  background: rgba(0,0,0,0.52);
+  color: #fff;
+  font-size: 24rpx;
+  font-weight: 800;
+}
+
+.edit-identity {
+  display: flex;
+  align-items: center;
+  gap: 22rpx;
+}
+
+.edit-avatar-button {
+  width: 148rpx;
+  min-width: 148rpx;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  color: #fff;
+  line-height: 1;
+}
+
+.edit-avatar-button::after {
+  border: 0;
+}
+
+.edit-avatar-image {
+  width: 112rpx;
+  height: 112rpx;
+  display: block;
+  margin: 0 auto;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.08);
+}
+
+.edit-avatar-text {
+  display: block;
+  margin-top: 12rpx;
+  color: rgba(255,255,255,0.65);
+  font-size: 22rpx;
+}
+
+.edit-name-wrap {
+  min-width: 0;
+  flex: 1;
+}
+
+.edit-name-input {
+  width: 100%;
+  height: 76rpx;
+  margin-top: 12rpx;
+  padding: 0 20rpx;
+  box-sizing: border-box;
+  border-radius: 14rpx;
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+  font-size: 28rpx;
+}
+
+.edit-field {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.edit-label {
+  color: rgba(255,255,255,0.72);
+  font-size: 24rpx;
+  font-weight: 800;
+}
+
+.edit-motto {
+  width: 100%;
+  min-height: 96rpx;
+  padding: 18rpx;
+  box-sizing: border-box;
+  border-radius: 14rpx;
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+  font-size: 28rpx;
+}
+
+.edit-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+}
+
+.edit-tag-input {
+  width: calc((100% - 24rpx) / 3);
+  min-width: 0;
+  height: 72rpx;
+  padding: 0 18rpx;
+  box-sizing: border-box;
+  border-radius: 999rpx;
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+  font-size: 26rpx;
+}
+
+.edit-actions {
+  margin-top: 6rpx;
+}
+  
+   /* 这一行：左 stats + 右 Edit（同一行），并且整体往下挪 */
+   .profile-bottom{
+    width: 100%;
+    display: flex;
+    justify-content: space-between;  /* 左 stats 右 edit */
+    align-items: flex-end;           /* ✅同一行底对齐 */
+  
+    /* ✅把这个区域“变高”以后，让内容贴底 */
+    min-height: 160rpx;              /* 你要更低就加：140/160 */
+    padding-bottom: 20rpx;           /* 底部留一点呼吸感 */
+    box-sizing: border-box;
+  
+    // background: rgba(0,255,0,0.25);  /* 你调试用，满意后删 */
+  }
+  
+  .stats{
+    display: flex;
+    gap: 34rpx;
+    align-items: flex-end;
+  }
+  
+  .edit-wrap{
+    margin-left: auto;               /* ✅贴到最右 */
+    display: flex;
+    align-items: flex-end;
+  }
+  
+  .stat-num{
+    color: #fff;
+    font-size: 44rpx;
+    font-weight: 900;
+    line-height: 1.05;
+  }
+  
+  .stat-lbl{
+    margin-top: 6rpx;
+    color: rgba(255,255,255,0.75);
+    font-size: 24rpx;
+    font-weight: 700;
+  }
+
+  
+  .edit-btn{
+    width: 320rpx;
+  }
+
+/* =========================
+   你原来的 template 文案（保留）
+   ========================= */
+.blk-title {
+  font-size: 26rpx;
+  font-weight: 800;
+  color: #111;
+}
+
+.blk-sub {
+  margin-top: 8rpx;
+  font-size: 22rpx;
+  color: rgba(0, 0, 0, 0.55);
+}
+
+.ico {
+  font-size: 30rpx;
+}
+
+.pending-entry-icon {
+  position: relative;
+  width: 44rpx;
+  height: 44rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.entry-icon-dot {
+  position: absolute;
+  top: 2rpx;
+  right: 2rpx;
+  width: 13rpx;
+  height: 13rpx;
+  border-radius: 999rpx;
+  background: #FF3B30;
+  border: 2rpx solid rgb(46,46,46);
+  box-sizing: border-box;
+}
+
+.more-menu-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 13000;
+  background: rgba(0,0,0,0.42);
+}
+
+.more-menu-panel {
+  width: 560rpx;
+  height: 100%;
+  padding: calc(32rpx + env(safe-area-inset-top)) 24rpx calc(32rpx + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+  background: rgb(33,33,33);
+  box-shadow: 18rpx 0 44rpx rgba(0,0,0,0.28);
+  display: flex;
+  flex-direction: column;
+  animation: moreMenuIn 180ms ease-out both;
+}
+
+@keyframes moreMenuIn {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+.more-menu-head {
+  height: 72rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.more-menu-title {
+  color: #fff;
+  font-size: 34rpx;
+  font-weight: 900;
+}
+
+.more-menu-close {
+  width: 64rpx;
+  height: 64rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.more-menu-list {
+  margin-top: 28rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.menu-entry-icon {
+  width: 44rpx;
+  height: 44rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.more-menu-contact {
+  margin-top: auto;
+  padding-top: 28rpx;
+  border-top: 1rpx solid rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.62);
+  font-size: 24rpx;
+  font-weight: 700;
+  line-height: 1.45;
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.contact-email {
+  color: rgba(255,255,255,0.9);
+  font-size: 26rpx;
+}
+
+.arrow {
+  font-size: 34rpx;
+  opacity: 0.7;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.mid {
+  display: flex;
+  flex-direction: column;
+  gap: 6rpx;
+  min-width: 0;
+}
+
+.t1 {
+  font-size: 28rpx;
+  font-weight: 900;
+  color: #111;
+  line-height: 1.2;
+}
+
+.t2 {
+  font-size: 22rpx;
+  color: rgba(0, 0, 0, 0.55);
+  line-height: 1.2;
+}
+
+.placeholder {
+  margin-top: 14rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 10rpx;
+}
+
+.ph-line {
+  height: 64rpx;
+  border-radius: 12rpx;
+  background: rgba(0, 0, 0, 0.06);
+  display: flex;
+  align-items: center;
+  padding-left: 14rpx;
+  box-sizing: border-box;
+  font-size: 22rpx;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+/* Outer2 内边距由 inner 控制，shell 本身 padding=0 */
+.home-outer2-inner{
+  height: 100%;
+  box-sizing: border-box;
+  padding: 16rpx;          /* 你想要的“原来 shell padding”挪到这里 */
+  display: flex;
+  flex-direction: column;
+  gap: 14rpx;              /* 原来 shell gap 也挪到这里 */
+}
+
+/* segment 居中/固定高度 */
+.home-outer2-seg{
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+/* 瀑布流：占满剩余空间 */
+.home-outer2-waterfall{
+  flex: 1;
+  min-height: 0;          /* 关键：让 scroll-view 真正可滚动 */
+}
+
+/* 直接复用 Activity 的 grid 思路 */
+.home-outer2-grid{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16rpx;
+}
+
+/* Outer2 shell 只负责占位，不负责内容 padding */
+.outer2-inner{
+  height: 100%;
+  box-sizing: border-box;
+  padding: 16rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 14rpx;
+}
+
+.outer2-seg{
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: center;
+}
+
+.outer2-seg-tabs{
+  width: 100%;
+  display: block;
+}
+
+/* scroll-view 必须吃满剩余高度 */
+.outer2-waterfall{
+  flex: 1;
+  min-height: 0;
+}
+
+/* ✅ 跟 Activity 一样：自动补齐的瀑布流 */
+.outer2-masonry{
+  column-count: 2;
+  column-gap: 12rpx;
+}
+
+.outer2-empty {
+  padding: 80rpx 24rpx;
+  color: rgba(255,255,255,0.62);
+  font-size: 26rpx;
+  font-weight: 700;
+  text-align: center;
+}
+
+.m-item{
+  break-inside: avoid;
+  margin-bottom: 12rpx;
+}
+
+.m-item card{
+  display: block;
+  width: 100%;
+}
+
+.mid .t1{
+  color:#fff;
+  font-weight:700;
+  font-size:30rpx;
+}
+
+.mid .t2{
+  color:rgba(255,255,255,0.65);
+  font-size:24rpx;
+  margin-top:4rpx;
+}
+
+.arrow{
+  color:#fff;
+  font-size:32rpx;
+  font-weight:600;
+}
+
+.ico{
+  color:#fff;
+  font-size:34rpx;
+}
+
+.outer2-inner{
+  height: 100%;
+  box-sizing: border-box;
+  padding: 16rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 14rpx;
+}
+
+.outer2-seg{
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: center;
+}
+
+.outer2-seg-tabs{
+  width: 100%;
+  display: block;
+}
+
+.outer2-waterfall{
+  flex: 1;
+  min-height: 0;
+}
+
+.outer2-masonry{
+  column-count: 2;
+  column-gap: 12rpx;
+}
+
+.m-item{
+  break-inside: avoid;
+  margin-bottom: 12rpx;
+}
+
+.m-item card{
+  display: block;
+  width: 100%;
+}
+
+/* 待评价列表 */
+.outer2-review-list{
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.review-avatar{
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 9999rpx;
+  display: block;
+  background: rgba(255,255,255,0.08);
+}
+
+.arrow--white{
+  color: #fff;
+}
+
+.outer2-review-wrap{
+  display: flex;
+  flex-direction: column;
+  gap: 14rpx;
+}
+
+.outer2-seg--sub{
+  margin-top: 4rpx;
+}
+
+.outer2-review-list{
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.review-avatar{
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 9999rpx;
+  display: block;
+  background: rgba(255,255,255,0.08);
+}
+
+.arrow--white{
+  color: #fff;
+}

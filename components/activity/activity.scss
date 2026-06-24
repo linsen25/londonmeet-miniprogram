@@ -1,0 +1,164 @@
+/* =========================================================
+ * Component: Activity
+ * 需求：
+ * 1) 背景 rgb(33,33,33)
+ * 2) 顶部父容器 #222222
+ * 3) 按钮白底灰字，形状布局不动
+ * 4) 中间“本周/本月”与两侧按钮上下 padding 对齐
+ * 5) 字体风格像 index：加粗
+ * ========================================================= */
+
+ .activity-container {
+  height: 100vh;
+  width: 100%;
+  background: rgb(33, 33, 33);
+  box-sizing: border-box;
+}
+
+.activity-content {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* 顶部整条（你说的“按钮的父元素”） */
+.activity-row {
+  padding: 24rpx;
+  box-sizing: border-box;
+
+  display: grid;
+  grid-template-columns: 1fr 160rpx;
+  column-gap: 16rpx;
+  align-items: center;
+
+  background: #222222;
+  border-radius: 0;
+}
+
+/* 每一格高度统一 = 按钮高度，确保都在一条线上 */
+.activity-cell {
+  height: 72rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.activity-cell--wide {
+  justify-content: center;
+}
+
+.activity-range-filter {
+  width: 100%;
+  height: 72rpx;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  background: #ffffff;
+  border-radius: 9999rpx;
+}
+
+.activity-range-label {
+  position: relative;
+  flex: 0 0 25%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  color: #000000;
+  font-size: 28rpx;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.activity-range-label::after {
+  position: absolute;
+  top: 18rpx;
+  right: 0;
+  bottom: 18rpx;
+  width: 1rpx;
+  content: "";
+  background: #d8d8d8;
+}
+
+/* 左右按钮：吃满 cell */
+.activity-btn {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.activity-search-btn {
+  width: 100%;
+  height: 72rpx;
+  border-radius: 9999rpx;
+  background: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 中间 tabs 外壳：做成和按钮一样的“白色胶囊”，并且强制同高 */
+.activity-seg-wrap {
+  width: 100%;
+  height: 72rpx;
+  background: #ffffff;
+  border-radius: 999rpx;
+
+  /* 关键：让内部 tabs 垂直居中，避免它自己 padding 造成上下不齐 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  /* 这里给它一点左右呼吸感，避免 tabs 贴边 */
+  padding: 0 12rpx;
+  box-sizing: border-box;
+
+  /* 字体加粗（尽量让内部继承） */
+  font-weight: 600;
+}
+
+/* tabs 本体尽量填满 wrap 的高度 */
+.activity-seg {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  display: block;
+
+  /* 字体风格对齐 index（加粗） */
+  font-weight: 600;
+  font-size: 28rpx;
+  line-height: 1;
+}
+
+/* 下面瀑布流 */
+.activity-waterfall {
+  flex: 1;
+  min-height: 0;
+  padding: 12rpx 12rpx 120rpx;
+  box-sizing: border-box;
+}
+
+/* 小红书式瀑布流：CSS columns */
+.activity-masonry{
+  column-count: 2;        /* 两列 */
+  column-gap: 12rpx;      /* 列间距 */
+}
+
+.m-item{
+  break-inside: avoid;    /* ✅ 防止卡片被分割 */
+  margin-bottom: 12rpx;   /* 行间距 */
+}
+
+/* 让 card 自己撑满列宽 */
+.m-item card{
+  display: block;
+  width: 100%;
+}
+
+/* [LOCKED] Card size in Activity */
+.activity-grid card {
+  grid-column: span 2;
+}

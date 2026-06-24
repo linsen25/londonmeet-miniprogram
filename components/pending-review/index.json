@@ -1,0 +1,8 @@
+{
+    "component": true,
+    "usingComponents": {
+      "mf-template": "/components/mf-template/index",
+      "van-icon": "@vant/weapp/icon/index",
+      "van-popup": "@vant/weapp/popup/index"
+    }
+  }

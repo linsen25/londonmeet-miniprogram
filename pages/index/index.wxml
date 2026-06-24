@@ -1,0 +1,173 @@
+<view class="viewport">
+  <view wx:if="{{!isLoggedIn}}" class="login-screen">
+    <view class="login-hero">
+      <image class="login-logo" src="/assets/logo.png" mode="aspectFill" />
+      <text class="login-subtitle">测试版</text>
+    </view>
+
+    <mf-button
+      class="login-section"
+      bg="#07C160"
+      color="#FFFFFF"
+      height="72rpx"
+      radius="36rpx"
+      fontSize="28rpx"
+      block="{{false}}"
+      width="320rpx"
+      loading="{{loginLoading}}"
+      disabled="{{loginLoading}}"
+      text="{{loginLoading ? '登录中...' : '微信登录'}}"
+      bindtap="onLogin"
+    />
+  </view>
+
+  <view wx:else class="main-screen">
+    <view class="tab-panel" wx:if="{{activeTab === 'activity'}}">
+      <activity-view
+        id="activityView"
+        bindsearch="onActivitySearch"
+        bind:openpost="onOpenPost"
+        bind:favoritechange="onFavoriteStateChange"
+      />
+    </view>
+
+    <view class="tab-panel" wx:if="{{activeTab === 'home'}}">
+      <home-view
+        id="homeView"
+        bind:openpost="onOpenPost"
+        bind:openpendingreview="onOpenPendingReview"
+        bind:openfavorites="onOpenFavorites"
+        bind:openhistory="onOpenHistory"
+        bind:openfeedback="onOpenFeedback"
+        bind:openreviewrate="onOpenReviewRate"
+        bind:opennotifications="onOpenNotifications"
+        bind:favoritechange="onFavoriteStateChange"
+      />
+    </view>
+
+    <view wx:if="{{!showPost && !showPendingReview && !showFavorites && !showHistory && !showNotifications && !showReviewRate && !showCreatePost && !showSearch && !showFeedback}}" class="bottom-nav">
+      <view
+        class="bottom-nav__item {{activeTab === 'activity' ? 'is-active' : ''}}"
+        bindtap="onTabActivity"
+      >
+        <van-icon
+          name="calendar-o"
+          size="34rpx"
+          color="{{activeTab === 'activity' ? '#FFFFFF' : 'rgba(255,255,255,0.45)'}}"
+        />
+        <text class="bottom-nav__label">活动</text>
+      </view>
+
+      <view
+        class="bottom-nav__item bottom-nav__item--plus"
+        bindtap="onTabPlus"
+      >
+        <van-icon
+          name="plus"
+          size="44rpx"
+          color="#FFFFFF"
+        />
+      </view>
+
+      <view
+        class="bottom-nav__item {{activeTab === 'home' ? 'is-active' : ''}}"
+        bindtap="onTabHome"
+      >
+        <van-icon
+          name="home-o"
+          size="34rpx"
+          color="{{activeTab === 'home' ? '#FFFFFF' : 'rgba(255,255,255,0.45)'}}"
+        />
+        <text class="bottom-nav__label">主页</text>
+      </view>
+    </view>
+  </view>
+
+  <view
+    wx:if="{{showPost}}"
+    class="post-overlay"
+    style="transform: translateX({{postTranslateX}}px); transition: {{postTransition}};"
+  >
+    <post-view
+      class="post-overlay__view"
+      postId="{{postId}}"
+      bind:close="onPostClose"
+      bind:swipertouch="onPostSwiperTouch"
+    />
+  </view>
+
+  <view wx:if="{{showPendingReview}}" class="pendingreview-overlay">
+    <pending-review
+      bind:close="onClosePendingReview"
+      bind:countchange="onPendingReviewCountChange"
+    />
+  </view>
+
+  <view wx:if="{{showFavorites}}" class="favorites-overlay">
+    <favorite-activities
+      bind:close="onCloseFavorites"
+      bind:openpost="onOpenFavoritePost"
+      bind:favoritechange="onFavoriteStateChange"
+    />
+  </view>
+
+  <view wx:if="{{showHistory}}" class="favorites-overlay">
+    <history-activities
+      bind:close="onCloseHistory"
+      bind:openpost="onOpenHistoryPost"
+    />
+  </view>
+
+  <view wx:if="{{showNotifications}}" class="notification-overlay">
+    <notification-center
+      bind:close="onCloseNotifications"
+      bind:openrelated="onOpenNotificationRelated"
+      bind:unreadchange="onNotificationUnreadChange"
+    />
+  </view>
+
+  <view wx:if="{{showReviewRate}}" class="reviewrate-overlay">
+    <review-rate
+      mode="{{reviewRateMode}}"
+      itemTitle="{{reviewRateTitle}}"
+      itemId="{{reviewRateItemId}}"
+      activityId="{{reviewRateActivityId}}"
+      targetId="{{reviewRateTargetId}}"
+      bind:close="onCloseReviewRate"
+      bind:submit="onSubmitReviewRate"
+    />
+  </view>
+
+  <view
+    wx:if="{{showCreatePost}}"
+    class="createpost-overlay"
+    style="transform: translateX({{createPostTranslateX}}px); transition: {{createPostTransition}};"
+  >
+    <createpost-view
+      bind:close="onCreatePostClose"
+      bind:created="onCreatePostCreated"
+    />
+  </view>
+
+  <view
+    wx:if="{{showSearch}}"
+    class="search-overlay"
+    style="{{searchOverlayStyle}}"
+  >
+    <search
+      id="searchView"
+      bind:close="onCloseSearch"
+      bind:search="onDoSearch"
+      bind:openpost="onOpenSearchPost"
+      bind:favoritechange="onFavoriteStateChange"
+    />
+  </view>
+
+  <view
+    wx:if="{{showFeedback}}"
+    class="feedback-overlay"
+    style="{{feedbackOverlayStyle}}"
+  >
+    <feedback-view bind:close="onCloseFeedback" />
+  </view>
+</view>

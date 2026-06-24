@@ -1,0 +1,7 @@
+{
+  "component": true,
+  "usingComponents": {
+    "card": "/components/card/card",
+    "van-icon": "@vant/weapp/icon/index"
+  }
+}

@@ -1,0 +1,52 @@
+.seg{
+  width: 100%;
+  display: block;
+}
+
+.seg-track{
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.seg-thumb{
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+
+  transition: left 240ms ease;
+  z-index: 1;
+}
+
+.seg-items{
+  position: relative;
+  z-index: 2;
+
+  width: 100%;
+  height: 100%;
+  display: flex;
+}
+
+.seg-item{
+  flex: 1;
+  height: 100%;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+}
+
+.seg-label{
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;   /* ✅ 真垂直居中 */
+  justify-content: center;
+}
+
+/* ✅ view 文本：盒模型 + line-height 1，绝不会 baseline 偏下 */
+.seg-text{
+  display: block;
+  line-height: 1;
+}

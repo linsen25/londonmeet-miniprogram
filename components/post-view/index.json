@@ -1,0 +1,9 @@
+{
+  "component": true,
+  "usingComponents": {
+    "van-icon": "@vant/weapp/icon/index",
+    "van-popup": "@vant/weapp/popup/index",
+    "mf-deadline-pill": "/components/mf-deadline-pill/index",
+    "mf-button": "/components/mf-button/index"
+  }
+}

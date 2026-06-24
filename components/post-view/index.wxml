@@ -1,0 +1,271 @@
+<view class="post-root">
+  <!-- 妞ゅ爼鍎撮弽?-->
+  <view class="post-topbar">
+    <view class="back-hit" bindtap="onBackTap">
+      <van-icon name="arrow-left" size="22px" color="#FFFFFF" />
+      <text class="back-text">返回</text>
+    </view>
+    <text class="topbar-title">活动详情</text>
+    <view class="topbar-right"></view>
+  </view>
+
+  <!-- 濠婃艾濮╅崘鍛啇 -->
+  <scroll-view class="post-scroll" scroll-y="true" enhanced="true">
+    <view class="post-scroll-inner">
+
+      <!-- 閳?鐠囷附鍎忔径褍娼￠敍姘崇枂閹绢厼娴?+ 閺嶅洭顣?+ 閹诲繗鍫?-->
+      <view class="post-shell">
+        <view class="organizer-row">
+          <image class="organizer-avatar" src="{{authorAvatarUrl}}" mode="aspectFill" />
+          <view class="organizer-info">
+            <text class="organizer-label">活动发起人</text>
+            <text class="organizer-name">{{authorName}}</text>
+          </view>
+          <view class="organizer-rating {{hasOrganizerRating ? '' : 'is-empty'}}">
+            <text wx:if="{{hasOrganizerRating}}" class="organizer-star">★</text>
+            <text class="organizer-score">{{organizerRatingText}}</text>
+          </view>
+          <view wx:if="{{!isCreator}}" class="organizer-report" catchtap="onOpenReport">举报</view>
+        </view>
+
+        <swiper
+          class="post-swiper"
+          indicator-dots="true"
+          circular="true"
+          autoplay="false"
+          bindtouchstart="onSwiperTouchStart"
+          bindtouchend="onSwiperTouchEnd"
+          bindtouchcancel="onSwiperTouchEnd"
+        >
+          <swiper-item wx:for="{{images}}" wx:key="*this">
+            <image
+              class="swiper-img"
+              src="{{item}}"
+              mode="aspectFill"
+              data-index="{{index}}"
+              bindtap="onPreviewImage"
+            />
+          </swiper-item>
+        </swiper>
+
+        <view class="post-title">{{title}}</view>
+        <view class="post-desc">{{desc}}</view>
+      </view>
+
+      <!-- 閳?鏉╂稑瀹抽弶鈽呯窗閸楁洜瀚稉鈧稉?container閿涘牆宕熺仦鍌︾礆 -->
+      <view class="post-shell post-shell--progress">
+        <view
+          wx:if="{{tags.length}}"
+          class="post-tags"
+        >
+          <view
+            wx:for="{{tags}}"
+            wx:key="*this"
+            class="post-tag-pill"
+          >
+            {{item}}
+          </view>
+        </view>
+
+        <view class="progress-row-1">
+          <mf-deadline-pill
+            value="{{progressPct}}"
+            showLabel="{{true}}"
+            labelText="{{progressText}}"
+            colorMode="capacity"
+            height="18rpx"
+            trackBg="rgba(255,255,255,0.18)"
+            trackBorder="rgba(255,255,255,0.22)"
+            textColor="rgba(255,255,255,0.82)"
+            green="#07C160"
+            orange="#FF9500"
+            red="#FF3B30"
+            full="#8E8E93"
+          />
+        </view>
+
+      </view>
+
+      <view class="post-shell post-shell--time">
+        <view class="time-title">活动时间</view>
+        <view class="time-row">
+          <text class="time-label">开始</text>
+          <view class="time-content">
+            <text class="time-date">{{startDate}}</text>
+            <text class="time-clock">{{startTime}}</text>
+          </view>
+        </view>
+        <view class="time-divider"></view>
+        <view class="time-row">
+          <text class="time-label">结束</text>
+          <view class="time-content">
+            <text class="time-date">{{endDate}}</text>
+            <text class="time-clock">{{endTime}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 閳?閸︽澘娼冩径褍娼￠敍姘帥閸︽澘娴橀崘宥咁槻閸掕泛婀撮崸鈧?-->
+      <view class="post-shell">
+        <image
+          class="map-preview"
+          src="{{mapImgUrl}}"
+          mode="aspectFill"
+          bindtap="onPreviewMap"
+        />
+
+        <view class="post-address" bindtap="onCopyAddress">
+          <text class="addr-label">地址：</text>
+          <text class="addr-text">{{address}}</text>
+          <text class="addr-copy">复制</text>
+        </view>
+      </view>
+
+      <!-- 閳?閴?閹躲儱鎮曢幐澶愭尦閿涙艾鎷版潻娑樺閺夆€虫倱鐎硅棄鎮撴竟绛圭礉娑撳秴顢戦妴浣风瑝鐞氼偅灏呴妴浣稿讲閻愮懓鍤?-->
+        <view class="post-actions {{isEnded && !isCreator ? 'has-report' : ''}}">
+          <button
+            wx:if="{{isEnded && !isCreator}}"
+            class="history-report-btn"
+            bindtap="onOpenReport"
+          >举报</button>
+          <mf-button
+            class="apply-btn"
+            text="{{applying ? '提交中...' : applyText}}"
+            bg="{{applyBg}}"
+            color="#FFFFFF"
+            height="96rpx"
+            radius="28rpx"
+            fontSize="32rpx"
+            disabled="{{applyDisabled || applying}}"
+            bind:tap="onApply"
+          />
+        </view>
+
+
+    </view>
+  </scroll-view>
+
+  <view
+    wx:if="{{showImagePreview}}"
+    class="image-preview"
+    catchtouchmove="onPreviewTouchMove"
+  >
+    <view class="image-preview__close" bindtap="onCloseImagePreview">
+      <van-icon name="cross" size="28px" color="#FFFFFF" />
+    </view>
+
+    <swiper
+      class="image-preview__swiper"
+      current="{{previewIndex}}"
+      circular="{{images.length > 1}}"
+      duration="160"
+      bindchange="onPreviewSwiperChange"
+    >
+      <swiper-item wx:for="{{images}}" wx:key="*this">
+        <movable-area class="image-preview__area" scale-area="{{true}}">
+          <movable-view
+            class="image-preview__movable"
+            direction="all"
+            scale="{{true}}"
+            scale-min="1"
+            scale-max="4"
+            out-of-bounds="{{false}}"
+          >
+            <image class="image-preview__image" src="{{item}}" mode="aspectFit" />
+          </movable-view>
+        </movable-area>
+      </swiper-item>
+    </swiper>
+  </view>
+
+  <van-popup
+    show="{{showApplyPopup}}"
+    round
+    position="bottom"
+    lock-scroll
+    custom-style="padding: 22px 16px calc(22px + env(safe-area-inset-bottom)); background: rgb(46,46,46);"
+    bind:close="onCloseApplyPopup"
+  >
+    <view class="apply-popup">
+      <view class="apply-popup__title">报名申请</view>
+      <view class="apply-popup__activity">{{title}}</view>
+      <textarea
+        class="apply-popup__textarea"
+        value="{{applicationText}}"
+        maxlength="100"
+        adjust-position="{{true}}"
+        cursor-spacing="24"
+        placeholder="可以写一句自我介绍、参加原因或补充说明"
+        placeholder-class="apply-popup__placeholder"
+        bindinput="onApplicationInput"
+      />
+      <view class="apply-popup__count">{{applicationTextLength}}/100</view>
+      <view class="apply-popup__actions">
+        <button class="apply-popup__btn apply-popup__btn--cancel" bindtap="onCloseApplyPopup">取消</button>
+        <button
+          class="apply-popup__btn apply-popup__btn--confirm"
+          disabled="{{applying}}"
+          bindtap="onConfirmApply"
+        >
+          {{applying ? '提交中...' : '确认报名'}}
+        </button>
+      </view>
+    </view>
+  </van-popup>
+
+  <van-popup
+    show="{{showReportPopup}}"
+    round
+    position="bottom"
+    lock-scroll
+    custom-style="padding: 22px 16px calc(22px + env(safe-area-inset-bottom)); background: rgb(46,46,46);"
+    bind:close="onCloseReport"
+  >
+    <view class="report-popup">
+      <view class="report-popup__title">举报活动或发起人</view>
+      <view class="report-popup__subtitle">举报将绑定活动和发起人账号，不受昵称修改影响</view>
+      <textarea
+        class="report-popup__textarea"
+        value="{{reportReason}}"
+        maxlength="300"
+        adjust-position="{{true}}"
+        cursor-spacing="24"
+        placeholder="请说明举报原因"
+        placeholder-class="apply-popup__placeholder"
+        bindinput="onReportInput"
+      />
+      <view class="apply-popup__count">{{reportReasonLength}}/300</view>
+      <view class="apply-popup__actions">
+        <button class="apply-popup__btn apply-popup__btn--cancel" bindtap="onCloseReport">取消</button>
+        <button
+          class="apply-popup__btn report-popup__confirm"
+          disabled="{{reporting}}"
+          bindtap="onConfirmReport"
+        >
+          {{reporting ? '提交中...' : '提交举报'}}
+        </button>
+      </view>
+    </view>
+  </van-popup>
+
+  <van-popup
+  show="{{showGroupPopup}}"
+  round
+  position="bottom"
+  lock-scroll
+  custom-style="padding: 18px 16px 22px; background: rgb(46,46,46);"
+  bind:close="onCloseGroupPopup"
+>
+  <!-- 右上角关闭按钮 -->
+  <view class="popup-x" bindtap="onCloseGroupPopup">×</view>
+
+  <view class="popup-title">加入微信群</view>
+  <view class="popup-sub">请扫描二维码加入群聊，祝您活动愉快</view>
+
+
+    <image class="qr-img" mode="aspectFit" src="{{groupQrUrl}}" />
+
+
+  <view class="popup-hint">若二维码过期，请联系发起人更新</view>
+</van-popup>
+</view>

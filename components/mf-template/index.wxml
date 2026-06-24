@@ -1,0 +1,24 @@
+<view
+  class="mf-template {{pressed ? 'mf-template--pressed' : ''}} {{clickable ? 'mf-template--clickable' : 'mf-template--disabled'}} {{align === 'center' ? 'mf-template--center' : 'mf-template--left'}}"
+  style="min-height: {{minH}}; background: {{bg}}; border-radius: {{radius}}; {{customStyle}}"
+  bindtap="onTap"
+  bindtouchstart="onTouchStart"
+  bindtouchend="onTouchEnd"
+  bindtouchcancel="onTouchCancel"
+>
+  <view class="mf-template__press-layer"></view>
+
+  <view class="mf-template__grid" style="padding: {{pad}}; --mf-center-gap: {{centerGap}};">
+    <view class="mf-template__cell mf-template__cell--left">
+      <slot name="left"></slot>
+    </view>
+
+    <view class="mf-template__cell mf-template__cell--center">
+      <slot></slot>
+    </view>
+
+    <view class="mf-template__cell mf-template__cell--right">
+      <slot name="right"></slot>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,81 @@
+<view class="search-root">
+  <view class="search-topbar">
+    <view class="search-back" bindtap="onBackTap">
+      <van-icon name="arrow-left" size="22px" color="#FFFFFF" />
+      <text class="search-back__text">返回</text>
+    </view>
+  </view>
+
+  <scroll-view class="search-scroll" scroll-y="true" show-scrollbar="false">
+    <view class="search-card search-card--bar">
+      <view class="search-bar-row">
+        <view class="search-bar">
+          <input
+            class="search-input"
+            placeholder="搜索活动"
+            placeholder-class="search-placeholder"
+            value="{{keyword}}"
+            adjust-position="{{true}}"
+            cursor-spacing="20"
+            bindinput="onInput"
+            confirm-type="search"
+            bindconfirm="onSearchTap"
+          />
+        </view>
+
+        <view class="search-btn" bindtap="onSearchTap">搜索</view>
+      </view>
+    </view>
+
+    <view class="search-card search-card--tags">
+      <view class="search-card__title">活动标签</view>
+
+      <view wx:if="{{tagsLoading}}" class="tags-state">标签加载中...</view>
+      <view wx:elif="{{!hotTags.length}}" class="tags-state">暂无可用标签</view>
+      <view wx:else class="tags-wrap">
+        <view
+          wx:for="{{hotTags}}"
+          wx:key="id"
+          class="tag-pill {{selectedTagsMap[item.id] ? 'is-selected' : ''}}"
+          data-id="{{item.id}}"
+          catchtap="onTagTap"
+        >
+          {{item.name}}
+        </view>
+      </view>
+    </view>
+
+    <view class="search-card search-card--posts">
+      <view class="search-card__title">搜索结果</view>
+
+      <view wx:if="{{searching && resultPosts.length === 0}}" class="search-skeleton">
+        <view wx:for="{{skeletonItems}}" wx:key="*this" class="skeleton-card">
+          <view class="skeleton-cover"></view>
+          <view class="skeleton-body">
+            <view class="skeleton-line skeleton-line--wide"></view>
+            <view class="skeleton-line"></view>
+          </view>
+        </view>
+      </view>
+      <view wx:elif="{{!showResult}}" class="search-empty">输入关键词或选择标签后搜索</view>
+      <view wx:elif="{{resultPosts.length === 0}}" class="search-empty">暂无结果</view>
+
+      <view wx:else class="result-masonry">
+        <view wx:if="{{searching}}" class="search-loading-pill">更新中...</view>
+        <view
+          class="m-item"
+          wx:for="{{resultPosts}}"
+          wx:key="_id"
+        >
+          <card
+            data="{{item}}"
+            bind:tapcard="onTapCard"
+            bind:favoritechange="onFavoriteChange"
+          />
+        </view>
+      </view>
+    </view>
+
+    <view class="search-bottom-space"></view>
+  </scroll-view>
+</view>

@@ -1,0 +1,55 @@
+<view class="activity-container">
+  <view class="activity-content">
+    <view class="activity-row">
+      <view class="activity-cell activity-cell--mid">
+        <view class="activity-range-filter">
+          <view class="activity-range-label">距截止</view>
+          <mf-segment-tabs
+            class="activity-seg"
+            options="{{navOptions}}"
+            value="{{navValue}}"
+            height="72rpx"
+            pad="6rpx"
+            radius="9999rpx"
+            bg="#FFFFFF"
+            thumbBg="#222222"
+            textColor="#000000"
+            activeTextColor="#FFFFFF"
+            fontWeight="{{600}}"
+            fontSize="30rpx"
+            bind:change="onNavChange"
+          />
+        </view>
+      </view>
+
+      <view class="activity-cell">
+        <view class="activity-search-btn" bindtap="onSearchTap">
+          <van-icon name="search" size="42rpx" color="#000000" />
+        </view>
+      </view>
+    </view>
+
+    <scroll-view
+      class="activity-waterfall"
+      scroll-y="true"
+      enhanced="true"
+      refresher-enabled="true"
+      refresher-triggered="{{refreshing}}"
+      bindrefresherrefresh="onRefresh"
+    >
+      <view class="activity-masonry">
+        <view
+          class="m-item"
+          wx:for="{{posts}}"
+          wx:key="_id"
+        >
+          <card
+            data="{{item}}"
+            bind:tapcard="onTapCard"
+            bind:favoritechange="onFavoriteChange"
+          />
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+</view>

@@ -1,0 +1,101 @@
+<view class="page">
+
+<mf-shell minH="{{threeRowH}}" bg="#2F2F2F" shadow>
+  <mf-template rows="1" align="center" density="md">
+    SHOULD BE VERTICALLY CENTERED
+  </mf-template>
+</mf-shell>
+
+
+  <view class="hdr">
+    <view class="hdr-title">Stable Playground（8行规则）</view>
+    <view class="hdr-sub">
+      row={{rowH}} ｜ half={{halfRowH}} ｜ two={{twoRowH}} ｜ three={{threeRowH}}
+    </view>
+  </view>
+
+  <!-- CASE 1：3行 shell 中放 1行 template（必须水平铺满 + 垂直居中） -->
+  <mf-shell minH="{{threeRowH}}" bg="#2F2F2F" shadow>
+    <mf-template rows="1" align="left" density="md" bind:rowtap="onRowTap">
+      <view slot="left" class="icon">A</view>
+
+      <view class="center">
+        <view class="t1">Centered inside 3-row shell</view>
+        <view class="t2">Text has gap from icons ✅</view>
+      </view>
+
+      <view slot="right" class="arrow"><van-icon name="arrow" size="22px" color="#FFFFFF" /></view>
+    </mf-template>
+  </mf-shell>
+
+  <!-- CASE 2：Half row template（验证 rows=0.5） -->
+  <mf-shell minH="{{rowH}}" bg="#2F2F2F" shadow customStyle="margin-top:24rpx;">
+    <mf-template rows="0.5" align="center" density="sm" bind:rowtap="onRowTap">
+      Half row template
+      <view slot="right" class="tag">OK</view>
+    </mf-template>
+  </mf-shell>
+
+  <!-- CASE 3：3-row template + MORE 撑高（验证 template 内部居中 & 自动扩展） -->
+  <mf-shell minH="{{twoRowH}}" bg="#2F2F2F" shadow customStyle="margin-top:24rpx;">
+    <mf-template rows="3" align="left" density="md" bind:rowtap="onRowTap">
+      <view slot="left" class="icon">D</view>
+
+      <view class="center">
+        <view class="t1">3-row template (auto expand)</view>
+        <view class="t2">点击 MORE 看内容撑高</view>
+
+        <view class="line">Line 1</view>
+        <view class="line">Line 2</view>
+
+        <view wx:if="{{showExtra}}" class="line">Extra A</view>
+        <view wx:if="{{showExtra}}" class="line">Extra B</view>
+        <view wx:if="{{showExtra}}" class="line">Extra C</view>
+      </view>
+
+      <!-- 注意：右侧按钮点击不要触发行 rowtap 的话，可以把 clickable=false 或者用 catchtap -->
+      <view slot="right" class="tag-btn" catchtap="toggleExtra">
+        {{showExtra ? 'LESS' : 'MORE'}}
+      </view>
+    </mf-template>
+  </mf-shell>
+
+  <!-- CASE 4：列表堆叠（如果你启用了 layout="stack"） -->
+  <mf-shell minH="{{twoRowH}}" bg="#2F2F2F" shadow customStyle="margin-top:24rpx; margin-bottom:24rpx;" layout="stack">
+    <mf-template rows="1" align="left" density="md" bind:rowtap="onRowTap">
+      <view slot="left" class="icon">L</view>
+      <view class="center">
+        <view class="t1">List Row 1</view>
+        <view class="t2">stack mode</view>
+      </view>
+      <view slot="right" class="arrow"><van-icon name="arrow" size="22px" color="#FFFFFF" /></view>
+    </mf-template>
+
+    <mf-template rows="1" align="left" density="md" bind:rowtap="onRowTap">
+      <view slot="left" class="icon">L</view>
+      <view class="center">
+        <view class="t1">List Row 2</view>
+        <view class="t2">stack mode</view>
+      </view>
+      <view slot="right" class="arrow"><van-icon name="arrow" size="22px" color="#FFFFFF" /></view>
+    </mf-template>
+  </mf-shell>
+
+  <!-- CASE：Segment Tabs 单测（shell 内水平/垂直居中） -->
+<mf-segment-tabs
+  options="{{segOptions}}"
+  value="{{segValue}}"
+  height="96rpx"
+  pad="8rpx"
+  radius="9999rpx"
+  bg="#FFFFFF"
+  thumbBg="rgb(43,43,43)"
+  textColor="#000000"
+  activeTextColor="#FFFFFF"
+  fontWeight="{{600}}"
+  fontSize="32rpx"
+  bind:change="onSegChange"
+/>
+
+
+</view>

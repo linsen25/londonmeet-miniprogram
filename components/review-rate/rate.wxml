@@ -1,0 +1,57 @@
+<view class="rate-root">
+  <view class="rate-topbar">
+    <view class="back-wrap" bindtap="onBack">
+      <view class="back-chevron-wrap">
+        <van-icon name="arrow-left" size="22px" color="#FFFFFF" />
+      </view>
+      <view class="back-title-wrap">
+        <text class="back-title">{{mode === 'member' ? '评价成员' : '评价活动'}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="rate-shell rate-shell--title">
+    <view class="rate-item-title">{{itemTitle}}</view>
+  </view>
+
+  <view class="rate-shell rate-shell--chart">
+    <ec-canvas id="rateChart" canvas-id="rateChart" ec="{{ec}}" />
+  </view>
+
+  <view class="rate-shell rate-shell--form">
+    <view
+      wx:for="{{mode === 'member' ? memberItems : activityItems}}"
+      wx:key="key"
+      class="rate-row"
+    >
+      <view class="rate-row-head">
+        <text class="rate-label">{{item.label}}</text>
+        <text class="rate-value">{{item.value > 0 ? item.value : '未评分'}}</text>
+      </view>
+
+      <van-rate
+        value="{{item.value}}"
+        allow-half
+        size="{{24}}"
+        color="#ffd21e"
+        void-icon="star"
+        void-color="#666666"
+        bind:change="onRateChange"
+        data-index="{{index}}"
+      />
+    </view>
+  </view>
+
+  <view class="rate-shell rate-shell--submit">
+    <mf-button
+      class="submit-btn"
+      text="提交评价"
+      bg="#07C160"
+      color="#FFFFFF"
+      height="88rpx"
+      radius="28rpx"
+      fontSize="32rpx"
+      bind:tap="onSubmit"
+    />
+  </view>
+</view>

@@ -1,0 +1,9 @@
+<view class="mf-pill" style="{{wrapStyle}}">
+  <view class="mf-pill__track" style="{{trackStyle}}">
+    <view class="mf-pill__fill" style="{{fillStyle}}"></view>
+  </view>
+
+  <view class="mf-pill__label" style="{{labelStyle}}">
+  <text class="mf-pill__labelText">{{displayValue}}</text>
+</view>
+</view>

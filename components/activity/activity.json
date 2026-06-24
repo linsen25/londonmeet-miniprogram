@@ -1,0 +1,9 @@
+{
+  "component": true,
+  "usingComponents": {
+    "card": "/components/card/card",
+    "mf-button": "/components/mf-button/index",
+    "mf-segment-tabs": "/components/mf-segment-tabs/index",
+    "van-icon": "@vant/weapp/icon/index"
+  }
+}

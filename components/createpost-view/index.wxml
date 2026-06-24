@@ -1,0 +1,357 @@
+<view class="createpost-root">
+  <view class="post-topbar">
+    <view class="back-hit" bindtap="onBackTap">
+      <van-icon name="arrow-left" size="22px" color="#FFFFFF" />
+      <text class="back-text">返回</text>
+    </view>
+    <text class="topbar-title">创建活动</text>
+    <view class="topbar-right"></view>
+  </view>
+
+  <scroll-view
+    class="page-scroll"
+    scroll-y="true"
+    enhanced="true"
+    show-scrollbar="false"
+    scroll-with-animation="true"
+    scroll-into-view="{{scrollTarget}}"
+  >
+    <view id="field-images" class="card hero-card {{validationErrorKey === 'images' ? 'validation-card-error' : ''}}">
+      <view class="hero-swiper-wrap">
+        <block wx:if="{{hasImages}}">
+          <swiper
+            class="hero-swiper"
+            indicator-dots="true"
+            circular="true"
+            autoplay="false"
+            current="0"
+          >
+            <block wx:for="{{previewImages}}" wx:key="url">
+              <swiper-item>
+                <image class="hero-image" src="{{item.url}}" mode="aspectFill" />
+              </swiper-item>
+            </block>
+          </swiper>
+        </block>
+
+        <block wx:else>
+          <view class="hero-placeholder">
+            <text class="hero-placeholder-text">上传活动图片后会显示在这里</text>
+          </view>
+        </block>
+      </view>
+
+      <view class="card-divider"></view>
+
+      <view class="upload-area">
+        <view class="section-mini-title">上传图片（上限4张）</view>
+        <van-uploader
+          file-list="{{fileList}}"
+          max-count="{{maxCount}}"
+          max-size="{{maxSize}}"
+          multiple
+          bind:before-read="beforeRead"
+          bind:after-read="afterRead"
+          bind:delete="onDelete"
+          bind:oversize="onOversize"
+        />
+        <view wx:if="{{validationErrorKey === 'images'}}" class="validation-message">{{validationErrorMessage}}</view>
+      </view>
+    </view>
+
+    <view class="card info-card">
+      <view id="field-tags" class="setting-row {{validationErrorKey === 'tags' ? 'validation-row-error' : ''}}" bindtap="onOpenTagPicker">
+        <view class="setting-left">
+          <text class="setting-title">添加标签</text>
+          <text class="setting-sub">{{tagsDisplay}}</text>
+        </view>
+        <van-icon class="setting-arrow" name="arrow" size="20px" color="rgba(255,255,255,0.72)" />
+      </view>
+      <view wx:if="{{validationErrorKey === 'tags'}}" class="validation-message validation-message--row">{{validationErrorMessage}}</view>
+
+      <view class="setting-divider"></view>
+
+      <view id="field-date" class="setting-row {{validationErrorKey === 'date' ? 'validation-row-error' : ''}}" bindtap="onOpenCalendar">
+        <view class="setting-left">
+          <text class="setting-title">持续时间</text>
+          <text class="setting-sub">{{dateText}}</text>
+        </view>
+        <van-icon class="setting-arrow" name="arrow" size="20px" color="rgba(255,255,255,0.72)" />
+      </view>
+      <view wx:if="{{validationErrorKey === 'date'}}" class="validation-message validation-message--row">{{validationErrorMessage}}</view>
+
+      <view class="setting-divider"></view>
+
+      <view id="field-start" class="setting-row {{validationErrorKey === 'start' ? 'validation-row-error' : ''}}" bindtap="onTapStartTimeRow">
+        <view class="setting-left">
+          <text class="setting-title">开始时间</text>
+          <text class="setting-sub">{{startTimeDisplay}}</text>
+        </view>
+        <van-icon class="setting-arrow" name="arrow" size="20px" color="rgba(255,255,255,0.72)" />
+      </view>
+      <view wx:if="{{validationErrorKey === 'start'}}" class="validation-message validation-message--row">{{validationErrorMessage}}</view>
+
+      <view class="setting-divider"></view>
+
+      <view id="field-end" class="setting-row {{validationErrorKey === 'end' ? 'validation-row-error' : ''}}" bindtap="onTapEndTimeRow">
+        <view class="setting-left">
+          <text class="setting-title">结束时间</text>
+          <text class="setting-sub">{{endTimeDisplay}}</text>
+        </view>
+        <van-icon class="setting-arrow" name="arrow" size="20px" color="rgba(255,255,255,0.72)" />
+      </view>
+      <view wx:if="{{validationErrorKey === 'end'}}" class="validation-message validation-message--row">{{validationErrorMessage}}</view>
+
+      <view class="setting-divider"></view>
+
+      <view id="field-recruit" class="setting-row {{validationErrorKey === 'recruit' ? 'validation-row-error' : ''}}" bindtap="onTapRecruitRow">
+        <view class="setting-left">
+          <text class="setting-title">招募人数</text>
+          <text class="setting-sub">{{recruitDisplay}}</text>
+        </view>
+        <van-icon class="setting-arrow" name="arrow" size="20px" color="rgba(255,255,255,0.72)" />
+      </view>
+      <view wx:if="{{validationErrorKey === 'recruit'}}" class="validation-message validation-message--row">{{validationErrorMessage}}</view>
+    </view>
+
+    <view class="content-card">
+      <view id="field-title" class="content-label">活动标题</view>
+      <view class="form-box form-box--title {{validationErrorKey === 'title' ? 'validation-input-error' : ''}}">
+        <input
+          class="form-input"
+          placeholder="请输入活动标题，最多20字"
+          placeholder-class="dark-placeholder"
+          maxlength="20"
+          value="{{title}}"
+          adjust-position="{{true}}"
+          cursor-spacing="24"
+          bindinput="onTitleInput"
+        />
+      </view>
+      <view wx:if="{{validationErrorKey === 'title'}}" class="validation-message">{{validationErrorMessage}}</view>
+
+      <view class="content-gap"></view>
+
+      <view id="field-content" class="content-label">正文</view>
+      <view class="form-box form-box--desc {{validationErrorKey === 'content' ? 'validation-input-error' : ''}}">
+        <textarea
+          class="form-textarea form-textarea--desc"
+          style="height: {{contentHeight}}rpx;"
+          placeholder="请输入正文内容，最多400字"
+          placeholder-class="dark-placeholder"
+          maxlength="400"
+          value="{{content}}"
+          auto-height="false"
+          disable-scroll="false"
+          fixed="false"
+          cursor-spacing="24"
+          show-confirm-bar="false"
+          adjust-position="true"
+          bindinput="onContentInput"
+          bindlinechange="onContentLineChange"
+        ></textarea>
+        <view class="content-counter">{{contentLength}} / {{contentMaxChars}}</view>
+      </view>
+      <view wx:if="{{validationErrorKey === 'content'}}" class="validation-message">{{validationErrorMessage}}</view>
+    </view>
+
+    <view class="card bottom-card">
+      <view class="map-preview">
+        <image
+          wx:if="{{mapImageUrl}}"
+          class="map-image"
+          src="{{mapImageUrl}}"
+          mode="aspectFill"
+        />
+
+        <view wx:elif="{{locationText && !mapLoadFailed}}" class="map-selected">
+          <text class="map-selected-title">正在加载地图...</text>
+          <text class="map-selected-text">{{locationText}}</text>
+        </view>
+
+        <view wx:elif="{{locationText && mapLoadFailed}}" class="map-selected">
+          <text class="map-selected-title">地图暂时不可用</text>
+          <text class="map-selected-text">{{locationText}}</text>
+        </view>
+
+        <view wx:else class="map-placeholder">
+          <text class="map-placeholder-text">请粘贴 Google Maps 地址</text>
+        </view>
+      </view>
+
+      <view class="address-help-row" data-type="location" bindtap="onOpenHelp">
+        <text>地址填写帮助</text>
+        <view class="help-button">?</view>
+      </view>
+
+      <view id="field-location" class="address-row {{validationErrorKey === 'location' ? 'validation-input-error' : ''}}">
+        <view class="address-main">
+          <text class="address-label">地址:</text>
+          <textarea
+            class="address-input"
+            value="{{locationDisplay}}"
+            placeholder="请粘贴 Google Maps 地址"
+            auto-height
+            show-confirm-bar="{{false}}"
+            adjust-position="{{true}}"
+            cursor-spacing="24"
+            bindinput="onLocationInput"
+          ></textarea>
+        </view>
+        <view class="address-action" bindtap="onPasteLocation">粘贴</view>
+      </view>
+      <view wx:if="{{validationErrorKey === 'location'}}" class="validation-message">{{validationErrorMessage}}</view>
+
+      <view id="field-invite" class="group-block {{validationErrorKey === 'invite' ? 'validation-group-error' : ''}}">
+        <view class="group-head">
+          <text class="group-title">加群码</text>
+        </view>
+        <view class="invite-help-row" data-type="invite" bindtap="onOpenHelp">
+          <text>加群码填写帮助</text>
+          <view class="help-button">?</view>
+        </view>
+        <van-uploader
+          file-list="{{inviteFileList}}"
+          max-count="1"
+          max-size="{{maxSize}}"
+          bind:before-read="beforeRead"
+          bind:after-read="onInviteAfterRead"
+          bind:delete="onInviteDelete"
+          bind:oversize="onOversize"
+        />
+        <view wx:if="{{validationErrorKey === 'invite'}}" class="validation-message">{{validationErrorMessage}}</view>
+      </view>
+    </view>
+
+    <view class="submit-wrap">
+      <mf-button
+        text="{{submitting ? '创建中...' : '创建活动'}}"
+        bg="#16c35b"
+        color="#ffffff"
+        radius="24rpx"
+        height="96rpx"
+        fontSize="34rpx"
+        loading="{{submitting}}"
+        disabled="{{submitting}}"
+        bind:tap="onSubmit"
+      />
+    </view>
+  </scroll-view>
+
+  <van-popup
+    show="{{showTagPicker}}"
+    position="bottom"
+    round
+    custom-style="height: 72vh; background: rgb(33,33,33);"
+    bind:close="onCloseTagPicker"
+  >
+    <view class="tag-popup">
+      <view class="tag-popup-header">
+        <text class="tag-popup-title">选择标签</text>
+        <text class="tag-popup-close" bindtap="onCloseTagPicker">关闭</text>
+      </view>
+
+      <view class="tag-toolbar">
+        <text class="tag-toolbar-text">已选 {{selectedTags.length}} / {{tagMax}}</text>
+        <view class="tag-toolbar-actions">
+          <text class="toolbar-btn" bindtap="onClearTags">清空</text>
+        </view>
+      </view>
+
+      <view class="tag-list">
+        <block wx:for="{{filteredTags}}" wx:key="id">
+          <view
+            class="tag-chip {{item.selected ? 'tag-chip-active' : ''}}"
+            data-id="{{item.id}}"
+            bindtap="onToggleTag"
+          >
+            {{item.name}}
+          </view>
+        </block>
+      </view>
+
+      <view class="tag-confirm">
+        <mf-button
+          text="确定"
+          bg="#ffffff"
+          color="#000000"
+          radius="22rpx"
+          height="84rpx"
+          fontSize="30rpx"
+          bind:tap="onConfirmTags"
+        />
+      </view>
+    </view>
+  </van-popup>
+
+  <van-calendar
+    show="{{showCalendar}}"
+    type="range"
+    min-date="{{minDate}}"
+    max-date="{{maxDate}}"
+    allow-same-day="{{true}}"
+    bind:close="onCloseCalendar"
+    bind:confirm="onConfirmCalendar"
+  />
+
+  <van-popup
+    show="{{showTimePicker}}"
+    position="bottom"
+    round
+    bind:close="onCloseTimePicker"
+  >
+    <van-picker
+      show-toolbar
+      title="{{timePickerTitle}}"
+      columns="{{timeColumns}}"
+      bind:cancel="onCloseTimePicker"
+      bind:confirm="onConfirmTimePicker"
+    />
+  </van-popup>
+
+  <van-popup
+    show="{{showRecruitPicker}}"
+    position="bottom"
+    round
+    bind:close="onCloseRecruitPicker"
+  >
+    <van-picker
+      show-toolbar
+      title="选择招募人数"
+      columns="{{recruitColumns}}"
+      bind:cancel="onCloseRecruitPicker"
+      bind:confirm="onConfirmRecruitPicker"
+    />
+  </van-popup>
+
+  <van-popup
+    show="{{showHelpPopup}}"
+    position="bottom"
+    round
+    lock-scroll
+    custom-style="background: rgb(46,46,46);"
+    bind:close="onCloseHelp"
+  >
+    <view class="help-popup">
+      <view class="help-popup-close" bindtap="onCloseHelp">✕</view>
+      <scroll-view class="help-popup-scroll" scroll-y="true" enhanced="true" show-scrollbar="false">
+        <view class="help-popup-title">{{helpTitle}}</view>
+        <view class="help-popup-sub">{{helpDescription}}</view>
+        <view
+          class="help-image-item"
+          wx:for="{{helpImages}}"
+          wx:key="src"
+        >
+          <view class="help-image-label">{{item.label}}</view>
+          <image
+            class="help-tutorial-image"
+            src="{{item.src}}"
+            mode="widthFix"
+            show-menu-by-longpress="{{true}}"
+          />
+        </view>
+        <view class="help-popup-hint">请按照图片中的红色标记操作</view>
+      </scroll-view>
+    </view>
+  </van-popup>
+</view>

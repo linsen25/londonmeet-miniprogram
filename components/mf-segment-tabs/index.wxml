@@ -1,0 +1,31 @@
+<view class="seg" style="{{rootStyle}}">
+  <view class="seg-track">
+
+    <view
+      class="seg-thumb"
+      style="width: {{thumbW}}%; left: {{thumbLeft}}%; {{thumbStyle}}"
+    ></view>
+
+    <view class="seg-items">
+      <view
+        wx:for="{{options}}"
+        wx:key="key"
+        class="seg-item"
+        data-key="{{item.key}}"
+        data-index="{{index}}"
+        bindtap="onItemTap"
+      >
+        <view class="seg-label">
+          <!-- ✅ 用 view 代替 text：彻底绕开 baseline 偏下 -->
+          <view
+            class="seg-text"
+            style="{{item.key === value ? activeTextStyle : textStyle}}"
+          >
+            {{item.label}}
+          </view>
+        </view>
+      </view>
+    </view>
+
+  </view>
+</view>

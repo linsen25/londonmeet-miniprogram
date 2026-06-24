@@ -1,0 +1,36 @@
+<view class="notice-root" bindtap="onClose">
+  <view class="notice-panel" catchtap="noop">
+    <view class="notice-topbar">
+      <view class="notice-back" bindtap="onClose">
+        <van-icon name="arrow-left" size="21px" color="#FFFFFF" />
+        <text>返回</text>
+      </view>
+      <view class="notice-title">通知</view>
+      <view class="notice-read-all" bindtap="onReadAll">全部已读</view>
+    </view>
+
+    <scroll-view class="notice-list" scroll-y="true" enhanced="true">
+      <view wx:if="{{loading}}" class="notice-empty">加载中...</view>
+      <view wx:elif="{{!items.length}}" class="notice-empty">暂无通知</view>
+      <block wx:else>
+        <view
+          wx:for="{{items}}"
+          wx:key="id"
+          class="notice-item {{item.read ? 'is-read' : 'is-unread'}}"
+          data-id="{{item.id}}"
+          bindtap="onTapItem"
+        >
+          <view class="notice-dot"></view>
+          <view class="notice-body">
+            <view class="notice-head">
+              <text class="notice-item-title">{{item.title}}</text>
+              <text class="notice-time">{{item.timeText}}</text>
+            </view>
+            <view class="notice-content">{{item.content}}</view>
+          </view>
+          <van-icon name="arrow" size="20px" color="rgba(255,255,255,0.42)" />
+        </view>
+      </block>
+    </scroll-view>
+  </view>
+</view>

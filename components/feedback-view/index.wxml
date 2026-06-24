@@ -1,0 +1,52 @@
+<view class="feedback-root">
+  <view class="feedback-topbar">
+    <view class="feedback-back" bindtap="onBackTap">
+      <van-icon name="arrow-left" size="22px" color="#FFFFFF" />
+      <text>返回</text>
+    </view>
+    <view class="feedback-title">意见箱</view>
+    <view class="feedback-side"></view>
+  </view>
+
+  <scroll-view class="feedback-scroll" scroll-y="true" show-scrollbar="false">
+    <view class="feedback-intro">
+      <view class="feedback-intro-title">告诉我们你的想法</view>
+      <view class="feedback-intro-sub">功能建议、使用问题或其他意见都可以在这里提交。</view>
+    </view>
+
+    <view class="feedback-card">
+      <view class="field-label">意见主题</view>
+      <view class="field-box">
+        <input
+          value="{{subject}}"
+          maxlength="100"
+          placeholder="请简要概括你的意见"
+          placeholder-class="feedback-placeholder"
+          adjust-position="{{true}}"
+          cursor-spacing="24"
+          bindinput="onSubjectInput"
+        />
+        <view class="field-count">{{subjectLength}} / 100</view>
+      </view>
+
+      <view class="field-label field-label--content">意见内容</view>
+      <view class="field-box field-box--content">
+        <textarea
+          value="{{content}}"
+          maxlength="1000"
+          placeholder="请详细描述你的意见或遇到的问题"
+          placeholder-class="feedback-placeholder"
+          adjust-position="{{true}}"
+          cursor-spacing="24"
+          show-confirm-bar="{{false}}"
+          bindinput="onContentInput"
+        ></textarea>
+        <view class="field-count">{{contentLength}} / 1000</view>
+      </view>
+    </view>
+
+    <button class="feedback-submit" disabled="{{submitting}}" bindtap="onSubmit">
+      {{submitting ? '提交中...' : '提交意见'}}
+    </button>
+  </scroll-view>
+</view>

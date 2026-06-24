@@ -1,0 +1,6 @@
+<view class="mf-shell {{shadow ? 'mf-shell--shadow' : ''}} {{clickable ? 'mf-shell--clickable' : ''}} {{layout === 'stack' ? 'mf-shell--stack' : 'mf-shell--center'}}" style="{{_style}}" bindtap="onTap">
+  <view class="mf-shell__content" style="{{_contentStyle}}{{layout === 'stack' ? ' row-gap:' + _gap + ';' : ''}}">
+    <slot></slot>
+  </view>
+  <slot name="footer"></slot>
+</view>

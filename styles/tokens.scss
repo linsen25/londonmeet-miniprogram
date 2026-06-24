@@ -1,0 +1,38 @@
+/* =========================================================
+ * Meetfun Design Tokens (Theme-ready)
+ * - 后续 theme 切换：可以替换整套 token 文件
+ * ========================================================= */
+
+:root, page {
+  /* Colors */
+  --mf-surface: #ffffff;
+  --mf-text: #111111;
+  --mf-muted: rgba(17, 17, 17, 0.6);
+
+  --mf-primary-bg: #111111;
+  --mf-primary-fg: #ffffff;
+
+  /* Shadows */
+  --mf-shadow: rgba(0, 0, 0, 0.06);
+
+  /* Radius */
+  --mf-radius-pill: 999px;
+  --mf-radius-card: 16px;
+
+  /* Spacing */
+  --mf-pad-x: 14px;
+  --mf-pad-y: 12px;
+
+  /* Motion */
+  --mf-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --mf-dur-fast: 140ms;
+  --mf-dur-mid: 260ms;
+
+  /* Button */
+  --mf-btn-min-h: 44px;
+  --mf-btn-scale: 1.03;
+
+  /* Segmented */
+  --mf-seg-h: 38px;
+  --mf-seg-pad: 3px;
+}

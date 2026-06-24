@@ -1,0 +1,21 @@
+<view
+  class="mf-btn {{block ? 'is-block' : ''}} {{disabled ? 'is-disabled' : ''}}"
+  style="{{_wrapStyle}}"
+  bindtouchstart="onPressStart"
+  bindtouchend="onPressEnd"
+  bindtouchcancel="onPressEnd"
+  bindtap="onTap"
+>
+  <view
+    class="mf-btn__inner {{pressed ? 'is-pressed' : ''}} {{variantClass}}"
+    style="{{_innerStyle}}"
+  >
+    <!-- 可选：加载态（如果你组件有 loading 属性） -->
+    <view wx:if="{{loading}}" class="mf-btn__loading"></view>
+
+    <!-- ✅ 文字盒子：强制高度=按钮高度，内部 flex 居中 -->
+    <view wx:if="{{!loading}}" class="mf-btn__textBox">
+      <text class="mf-btn__text" style="{{_textStyle}}">{{text}}</text>
+    </view>
+  </view>
+</view>

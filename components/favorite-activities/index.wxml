@@ -1,0 +1,25 @@
+<view class="favorite-root" bindtap="onClose">
+  <view class="favorite-panel" catchtap="noop">
+    <view class="favorite-handle"></view>
+    <view class="favorite-topbar">
+      <view class="favorite-title">我的收藏</view>
+      <view class="favorite-close" bindtap="onClose">
+        <van-icon name="cross" size="22px" color="#FFFFFF" />
+      </view>
+    </view>
+
+    <scroll-view class="favorite-list" scroll-y="true" enhanced="true">
+      <view wx:if="{{loading}}" class="favorite-empty">加载中...</view>
+      <view wx:elif="{{!posts.length}}" class="favorite-empty">暂无收藏的活动</view>
+      <view wx:else class="favorite-masonry">
+        <view class="favorite-item" wx:for="{{posts}}" wx:key="_id">
+          <card
+            data="{{item}}"
+            bind:tapcard="onTapCard"
+            bind:favoritechange="onFavoriteChange"
+          />
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+</view>

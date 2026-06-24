@@ -1,0 +1,26 @@
+/* =========================================================
+ * Meetfun Mixins (Theme-ready)
+ * - 可选：阴影 / 按压 / 过渡
+ * ========================================================= */
+
+@mixin mf-shadow-soft {
+  box-shadow: 0 10px 24px var(--mf-shadow);
+}
+
+@mixin mf-pressable {
+  transition: transform var(--mf-dur-fast) var(--mf-ease-out),
+    opacity var(--mf-dur-fast) ease-out;
+  will-change: transform;
+
+  &.is-pressed {
+    transform: scale(var(--mf-btn-scale));
+  }
+}
+
+@mixin mf-pill {
+  border-radius: var(--mf-radius-pill);
+}
+
+@mixin mf-card {
+  border-radius: var(--mf-radius-card);
+}

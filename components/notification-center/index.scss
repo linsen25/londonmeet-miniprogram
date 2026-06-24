@@ -1,0 +1,144 @@
+.notice-root {
+  min-height: 100vh;
+  width: 100%;
+  background: rgba(0,0,0,0.42);
+  color: #fff;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.notice-panel {
+  width: 620rpx;
+  max-width: 86vw;
+  height: 100vh;
+  padding: calc(32rpx + env(safe-area-inset-top)) 24rpx calc(32rpx + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+  background: rgb(33,33,33);
+  box-shadow: -18rpx 0 44rpx rgba(0,0,0,0.28);
+  display: flex;
+  flex-direction: column;
+  animation: noticePanelIn 180ms ease-out both;
+}
+
+@keyframes noticePanelIn {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+.notice-topbar {
+  height: 72rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18rpx;
+}
+
+.notice-back {
+  min-width: 128rpx;
+  height: 64rpx;
+  display: flex;
+  align-items: center;
+  gap: 6rpx;
+  color: rgba(255,255,255,0.9);
+  font-size: 27rpx;
+  font-weight: 800;
+}
+
+.notice-title {
+  flex: 1;
+  min-width: 0;
+  color: #fff;
+  font-size: 34rpx;
+  font-weight: 900;
+  text-align: center;
+}
+
+.notice-read-all {
+  min-width: 128rpx;
+  color: rgba(255,255,255,0.72);
+  font-size: 24rpx;
+  font-weight: 800;
+  text-align: right;
+  padding: 14rpx 0 14rpx 18rpx;
+}
+
+.notice-list {
+  flex: 1;
+  min-height: 0;
+  margin-top: 28rpx;
+}
+
+.notice-empty {
+  padding: 120rpx 20rpx;
+  color: rgba(255,255,255,0.58);
+  font-size: 28rpx;
+  font-weight: 700;
+  text-align: center;
+}
+
+.notice-item {
+  min-height: 132rpx;
+  margin-bottom: 16rpx;
+  padding: 22rpx 18rpx;
+  box-sizing: border-box;
+  border-radius: 18rpx;
+  background: rgb(46,46,46);
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.notice-item.is-read {
+  opacity: 0.58;
+}
+
+.notice-dot {
+  width: 14rpx;
+  height: 14rpx;
+  border-radius: 999rpx;
+  background: transparent;
+  flex: 0 0 auto;
+}
+
+.notice-item.is-unread .notice-dot {
+  background: #FF3B30;
+}
+
+.notice-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.notice-head {
+  display: flex;
+  align-items: center;
+  gap: 18rpx;
+}
+
+.notice-item-title {
+  flex: 1;
+  min-width: 0;
+  color: #fff;
+  font-size: 29rpx;
+  font-weight: 900;
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.notice-time {
+  color: rgba(255,255,255,0.52);
+  font-size: 22rpx;
+  font-weight: 700;
+  flex: 0 0 auto;
+}
+
+.notice-content {
+  margin-top: 10rpx;
+  color: rgba(255,255,255,0.68);
+  font-size: 25rpx;
+  font-weight: 650;
+  line-height: 1.45;
+}

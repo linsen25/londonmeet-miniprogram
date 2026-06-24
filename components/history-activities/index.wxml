@@ -1,0 +1,42 @@
+<view class="history-root" bindtap="onClose">
+  <view class="history-panel" catchtap="noop">
+    <view class="history-handle"></view>
+    <view class="history-topbar">
+      <view class="history-title">历史活动</view>
+      <view class="history-close" bindtap="onClose">
+        <van-icon name="cross" size="22px" color="#FFFFFF" />
+      </view>
+    </view>
+
+    <view class="history-switch">
+      <view class="history-switch__indicator {{activeType === 'created' ? 'is-right' : ''}}"></view>
+      <view
+        class="history-switch__item {{activeType === 'joined' ? 'is-active' : ''}}"
+        data-type="joined"
+        bindtap="onSwitchType"
+      >参加过的活动</view>
+      <view
+        class="history-switch__item {{activeType === 'created' ? 'is-active' : ''}}"
+        data-type="created"
+        bindtap="onSwitchType"
+      >我发起的活动</view>
+    </view>
+
+    <scroll-view class="history-list" scroll-y="true" enhanced="true">
+      <view wx:if="{{loading}}" class="history-empty">加载中...</view>
+      <view wx:elif="{{!posts.length}}" class="history-empty">
+        {{activeType === 'joined' ? '暂无参加过的历史活动' : '暂无发起过的历史活动'}}
+      </view>
+      <view wx:else class="history-masonry">
+        <view class="history-item" wx:for="{{posts}}" wx:key="_id">
+          <card
+            data="{{item}}"
+            dim-ended="{{false}}"
+            dim-full="{{false}}"
+            bind:tapcard="onTapCard"
+          />
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+</view>

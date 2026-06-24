@@ -1,0 +1,451 @@
+<scroll-view class="home-root" scroll-y="true">
+  <view class="home-page">
+    <view class="home-stack">
+
+      <!-- =========================
+           OUTER 1：个人主页头图卡片
+           ========================= -->
+      <mf-shell
+        minH="{{threeRowH}}"
+        bg="#2E2E2E"
+        radius="0 0 18rpx 18rpx"
+        padding="0"
+        shadow
+      >
+        <view
+  class="profile-hero"
+  style="height: {{threeRowH}}; background-image: url({{profile.coverUrl}});"
+>
+          <!-- 左上角：更多（保留） -->
+          <view class="profile-more" bindtap="onTapMore">
+            <van-icon name="wap-nav" size="25px" color="#FFFFFF" />
+          </view>
+
+          <view class="profile-notification" bindtap="onTapNotifications">
+            <van-icon
+              name="bell"
+              size="25px"
+              color="#FFFFFF"
+            />
+            <view wx:if="{{hasUnreadNotifications}}" class="top-icon-dot"></view>
+          </view>
+
+          <!-- 右上角：先不做扫码/分享（你说不要） -->
+
+          <!-- 内容区 -->
+          <view class="profile-body">
+
+            <!-- 头像 + 名字 + ID -->
+            <view class="profile-top">
+              <view class="profile-avatar">
+                <image
+                  class="avatar-img"
+                  src="{{profile.avatarUrl}}"
+                  mode="aspectFill"
+                />
+              </view>
+
+              <view class="profile-top-right">
+                <view class="profile-name">{{profile.name}}</view>
+                <view class="profile-id-row">
+                  <text class="profile-id">个人 ID：{{profile.userId}}</text>
+                </view>
+              </view>
+            </view>
+
+            <!-- 个性签名 -->
+            <view class="profile-motto">{{profile.motto}}</view>
+
+            <!-- 标签 pills -->
+            <view class="profile-pills">
+              <view
+                wx:for="{{profile.tags}}"
+                wx:key="*this"
+                class="pill"
+              >{{item}}</view>
+            </view>
+
+            <!-- 统计 + 编辑 -->
+            <view class="profile-bottom">
+              <view class="stats">
+                <view class="stat">
+                  <view class="stat-num">{{profile.stats.myEvents}}</view>
+                  <view class="stat-lbl">我的活动</view>
+                </view>
+                <view class="stat">
+                  <view class="stat-num">{{profile.stats.ongoing}}</view>
+                  <view class="stat-lbl">活动中</view>
+                </view>
+              </view>
+
+              <view class="edit-wrap">
+                <mf-button
+                  class="edit-btn"
+                  text="Edit Profile"
+                  bg="rgb(46,46,46)"
+                  color="#FFFFFF"
+                  height="72rpx"
+                  radius="9999rpx"
+                  fontSize="28rpx"
+                  bindtap="onEditProfile"
+                />
+              </view>
+            </view>
+
+          </view>
+        </view>
+      </mf-shell>
+
+      <view wx:if="{{showEditProfile}}" class="edit-profile-mask" bindtap="onCloseEditProfile">
+        <view class="edit-profile-panel" catchtap="noop">
+          <view class="edit-profile-head">
+            <text class="edit-profile-title">Edit Profile</text>
+            <text class="edit-profile-close" bindtap="onCloseEditProfile">×</text>
+          </view>
+
+          <view class="edit-cover-preview" style="background-image: url({{profile.coverUrl}});" bindtap="onChooseCover">
+            <text class="edit-cover-text">更换背景图</text>
+          </view>
+
+          <view class="edit-identity">
+            <button
+              class="edit-avatar-button"
+              open-type="chooseAvatar"
+              disabled="{{editProfileSaving}}"
+              bindchooseavatar="onChooseAvatar"
+            >
+              <image class="edit-avatar-image" src="{{editAvatarUrl}}" mode="aspectFill" />
+              <text class="edit-avatar-text">更换头像</text>
+            </button>
+
+            <view class="edit-name-wrap">
+              <text class="edit-label">昵称</text>
+              <input
+                class="edit-name-input"
+                type="nickname"
+                value="{{editName}}"
+                maxlength="30"
+                adjust-position="{{true}}"
+                cursor-spacing="24"
+                placeholder="请输入昵称"
+                bindinput="onEditNameInput"
+              />
+            </view>
+          </view>
+
+          <view class="edit-field">
+            <text class="edit-label">格言</text>
+            <textarea
+              class="edit-motto"
+              value="{{editMotto}}"
+              maxlength="100"
+              auto-height
+              adjust-position="{{true}}"
+              cursor-spacing="24"
+              placeholder="写一句想展示给大家的话"
+              bindinput="onEditMottoInput"
+            />
+          </view>
+
+          <view class="edit-field">
+            <text class="edit-label">标签</text>
+            <view class="edit-tags">
+              <input
+                wx:for="{{editTags}}"
+                wx:key="index"
+                class="edit-tag-input"
+                value="{{item}}"
+                maxlength="10"
+                adjust-position="{{true}}"
+                cursor-spacing="24"
+                data-index="{{index}}"
+                placeholder="最多10字"
+                bindinput="onEditTagInput"
+              />
+            </view>
+          </view>
+
+          <view class="edit-actions">
+            <mf-button
+              text="{{editProfileSaving ? '保存中...' : '保存'}}"
+              bg="#FFFFFF"
+              color="#111111"
+              height="76rpx"
+              radius="9999rpx"
+              fontSize="28rpx"
+              disabled="{{editProfileSaving}}"
+              bindtap="onSaveEditProfile"
+            />
+          </view>
+        </view>
+      </view>
+
+      <!-- ✅ 下面三块（你原来的 template 保留，先用） -->
+
+      <mf-template
+        rows="1"
+        density="md"
+        align="left"
+        bg="rgb(46,46,46)"
+        customStyle="margin:0 24rpx;width:auto;"
+        bind:rowtap="onTapPendingReview"
+      >
+        <view slot="left" class="pending-entry-icon">
+          <van-icon
+            name="warning-o"
+            size="24px"
+            color="#FFFFFF"
+          />
+          <view wx:if="{{pendingReviewCount > 0}}" class="entry-icon-dot"></view>
+        </view>
+        <view class="mid">
+          <view class="t1">待审核</view>
+          <view class="t2">审核报名成员</view>
+        </view>
+        <view slot="right" class="arrow">
+          <van-icon name="arrow" size="22px" color="#FFFFFF" />
+        </view>
+      </mf-template>
+
+      <mf-template
+        rows="1"
+        density="md"
+        align="left"
+        bg="rgb(46,46,46)"
+        customStyle="margin:0 24rpx;width:auto;"
+        bind:rowtap="onTapFavorites"
+      >
+        <view slot="left" class="pending-entry-icon">
+          <van-icon name="star" size="24px" color="#FFD60A" />
+        </view>
+        <view class="mid">
+          <view class="t1">我的收藏</view>
+          <view class="t2">查看收藏的活动</view>
+        </view>
+        <view slot="right" class="arrow">
+          <van-icon name="arrow" size="22px" color="#FFFFFF" />
+        </view>
+      </mf-template>
+
+      <mf-template
+        rows="1"
+        density="md"
+        align="left"
+        bg="rgb(46,46,46)"
+        customStyle="margin:0 24rpx;width:auto;"
+        bind:rowtap="onTapHistory"
+      >
+        <view slot="left" class="pending-entry-icon">
+          <van-icon name="clock-o" size="24px" color="#FFFFFF" />
+        </view>
+        <view class="mid">
+          <view class="t1">历史活动</view>
+          <view class="t2">查看已结束且报名通过的活动</view>
+        </view>
+        <view slot="right" class="arrow">
+          <van-icon name="arrow" size="22px" color="#FFFFFF" />
+        </view>
+      </mf-template>
+
+      <!-- =========================
+           OUTER 2（你原来的占位先留着）
+           ========================= -->
+      <!-- Outer2: 活动列表（Segment + 瀑布流） -->
+      <mf-shell
+        class="outer2-shell"
+        minH="{{sevenHalfRowH}}"
+        bg="rgb(46,46,46)"
+        radius="18rpx 18rpx 0 0"
+        padding="0"
+        gap="0"
+        shadow
+        layout="stack"
+      >
+        <view class="outer2-inner">
+          <!-- 顶部 Segment -->
+          <view class="outer2-seg">
+            <mf-segment-tabs
+              class="outer2-seg-tabs"
+              options="{{outer2Tabs}}"
+              value="{{outer2TabValue}}"
+              height="75rpx"
+              pad="6rpx"
+              radius="9999rpx"
+              bg="#FFFFFF"
+              thumbBg="#222222"
+              textColor="#000000"
+              activeTextColor="#FFFFFF"
+              fontWeight="{{600}}"
+              fontSize="32rpx"
+              bind:change="onOuter2TabChange"
+            />
+          </view>
+
+          <!-- 活动中：瀑布流 -->
+          <scroll-view
+            wx:if="{{outer2TabValue === 'ongoing'}}"
+            class="outer2-waterfall"
+            scroll-y="true"
+            enhanced="true"
+          >
+            <view wx:if="{{outer2Loading}}" class="outer2-empty">加载中...</view>
+            <view wx:elif="{{!outer2Posts.length}}" class="outer2-empty">暂无活动中内容</view>
+            <view class="outer2-masonry">
+              <view
+                class="m-item"
+                wx:for="{{outer2Posts}}"
+                wx:key="_id"
+              >
+                <card
+                  data="{{item}}"
+                  bind:tapcard="onTapCard"
+                  bind:favoritechange="onOuter2FavoriteChange"
+                />
+              </view>
+            </view>
+          </scroll-view>
+
+          <!-- 待评价：一行一行列表 -->
+          <view
+            wx:if="{{outer2TabValue === 'review'}}"
+            class="outer2-review-wrap"
+          >
+            <!-- 二级 segment -->
+            <view class="outer2-seg outer2-seg--sub">
+              <mf-segment-tabs
+                class="outer2-seg-tabs"
+                options="{{outer2ReviewTabs}}"
+                value="{{outer2ReviewTabValue}}"
+                height="75rpx"
+                pad="6rpx"
+                radius="9999rpx"
+                bg="#FFFFFF"
+                thumbBg="#222222"
+                textColor="#000000"
+                activeTextColor="#FFFFFF"
+                fontWeight="{{600}}"
+                fontSize="32rpx"
+                bind:change="onOuter2ReviewTabChange"
+              />
+            </view>
+
+            <!-- 评价活动 -->
+            <view
+              wx:if="{{outer2ReviewTabValue === 'event'}}"
+              class="outer2-review-list"
+            >
+              <view wx:if="{{reviewTasksLoading}}" class="outer2-empty">加载中...</view>
+              <view wx:elif="{{!reviewEventPosts.length}}" class="outer2-empty">暂无待评价活动</view>
+              <block wx:else>
+                <mf-template
+                  wx:for="{{reviewEventPosts}}"
+                  wx:key="_id"
+                  rows="1"
+                  density="md"
+                  align="left"
+                  bg="rgb(60,60,60)"
+                  bind:rowtap="onTapReviewEventItem"
+                  data-id="{{item._id}}"
+                >
+                  <view slot="left">
+                    <image class="review-avatar" src="{{item.avatarUrl}}" mode="aspectFill" />
+                  </view>
+
+                  <view class="mid">
+                    <view class="t1">{{item.title}}</view>
+                    <view class="t2">
+                      <view>开始：{{item.startText}}</view>
+                      <view>结束：{{item.endText}}</view>
+                    </view>
+                  </view>
+
+                  <view slot="right" class="arrow arrow--white">
+                    <van-icon name="arrow" size="22px" color="#FFFFFF" />
+                  </view>
+                </mf-template>
+              </block>
+            </view>
+
+            <!-- 评价成员 -->
+            <view
+              wx:if="{{outer2ReviewTabValue === 'member'}}"
+              class="outer2-review-list"
+            >
+              <view wx:if="{{reviewTasksLoading}}" class="outer2-empty">加载中...</view>
+              <view wx:elif="{{!reviewMemberPosts.length}}" class="outer2-empty">暂无待评价成员</view>
+              <block wx:else>
+                <mf-template
+                  wx:for="{{reviewMemberPosts}}"
+                  wx:key="_id"
+                  rows="1"
+                  density="md"
+                  align="left"
+                  bg="rgb(60,60,60)"
+                  bind:rowtap="onTapReviewMemberItem"
+                  data-id="{{item._id}}"
+                >
+                  <view slot="left">
+                    <image class="review-avatar" src="{{item.avatarUrl}}" mode="aspectFill" />
+                  </view>
+
+                  <view class="mid">
+                    <view class="t1">{{item.name}}</view>
+                    <view class="t2">
+                      <view>{{item.activityTitle}}</view>
+                      <view>{{item.scoreText}}</view>
+                    </view>
+                  </view>
+
+                  <view slot="right" class="arrow arrow--white">
+                    <van-icon name="arrow" size="22px" color="#FFFFFF" />
+                  </view>
+                </mf-template>
+              </block>
+            </view>
+          </view>
+        </view>
+      </mf-shell>
+    </view>
+
+    <view wx:if="{{showMoreMenu}}" class="more-menu-mask" bindtap="onCloseMoreMenu">
+      <view class="more-menu-panel" catchtap="noop">
+        <view class="more-menu-head">
+          <text class="more-menu-title">更多</text>
+          <view class="more-menu-close" bindtap="onCloseMoreMenu">
+            <van-icon name="cross" size="22px" color="rgba(255,255,255,0.82)" />
+          </view>
+        </view>
+
+        <view class="more-menu-list">
+          <mf-template
+            rows="1"
+            density="md"
+            align="left"
+            bg="rgb(46,46,46)"
+            radius="18rpx"
+            bind:rowtap="onTapFeedback"
+          >
+            <view slot="left" class="menu-entry-icon">
+              <van-icon name="comment-o" size="23px" color="#FFFFFF" />
+            </view>
+            <view class="mid">
+              <view class="t1">意见箱</view>
+              <view class="t2">告诉我们你的想法</view>
+            </view>
+            <view slot="right" class="arrow">
+              <van-icon name="arrow" size="22px" color="#FFFFFF" />
+            </view>
+          </mf-template>
+        </view>
+
+        <view class="more-menu-contact">
+          <text>联系我们</text>
+          <text class="contact-email">liulinsen2517@gmail.com</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</scroll-view>
+
+
+

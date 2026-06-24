@@ -1,0 +1,53 @@
+<view class="card {{isFull && dimFull ? 'card--full' : ''}} {{isEnded && dimEnded ? 'card--ended' : ''}}" bindtap="onTap">
+  <view class="card__cover">
+    <image
+      class="card__img {{coverLoaded ? 'is-loaded' : ''}}"
+      mode="aspectFill"
+      src="{{coverSrc}}"
+      bindload="onCoverLoad"
+      binderror="onCoverError"
+    />
+  </view>
+
+  <view class="card__body">
+    <view class="card__title">{{displayTitle}}</view>
+
+    <view class="card__bottom">
+      <image
+        class="card__avatar"
+        mode="aspectFill"
+        src="{{avatarSrc}}"
+      />
+
+      <view class="card__progress">
+        <view wx:if="{{isEnded}}" class="card__ended-label">已结束</view>
+        <mf-deadline-pill
+          wx:else
+          startAt="{{data.startAt}}"
+          endAt="{{data.endAt}}"
+          value="{{progressPct}}"
+          bgGif="{{data.progressGif}}"
+          showLabel="{{true}}"
+          labelText="{{progressText}}"
+          colorMode="capacity"
+          height="18rpx"
+          trackBg="rgba(255,255,255,0.18)"
+          trackBorder="rgba(255,255,255,0.22)"
+          textColor="rgba(255,255,255,0.82)"
+          green="#07C160"
+          orange="#FF9500"
+          red="#FF3B30"
+          full="#8E8E93"
+        />
+      </view>
+
+      <view class="card__favorite" catchtap="onFavoriteTap">
+        <van-icon
+          name="{{innerFavorited ? 'star' : 'star-o'}}"
+          size="30rpx"
+          color="{{innerFavorited ? '#FFD60A' : '#FFFFFF'}}"
+        />
+      </view>
+    </view>
+  </view>
+</view>

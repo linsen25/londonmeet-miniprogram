@@ -1,0 +1,78 @@
+.mf-template {
+  width: 100%;
+  position: relative;
+  box-sizing: border-box;
+  overflow: visible;
+
+  /* ✅ 关键：让内部 grid 可以吃满高度并居中 */
+  display: flex;
+  flex-direction: column;
+}
+
+.mf-template__press-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  background: rgba(0, 0, 0, 0.06);
+  border-radius: inherit;
+}
+.mf-template--pressed .mf-template__press-layer { opacity: 1; }
+.mf-template--disabled { opacity: 0.6; }
+
+/* ✅ grid 吃满高度（flex:1），并把内容块整体居中 */
+.mf-template__grid {
+  width: 100%;
+  flex: 1;
+
+  display: grid;
+  grid-template-columns: 1fr repeat(6, 1fr) 1fr;
+
+  /* 每一行内垂直居中 */
+  align-items: center;
+
+  /* ✅ 整体居中（最关键） */
+  place-content: center;
+
+  box-sizing: border-box;
+}
+
+/* cells */
+.mf-template__cell {
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  min-height: 0;
+}
+
+/* col 1 */
+.mf-template__cell--left {
+  grid-column: 1 / 2;
+  justify-content: center;
+  padding-right: 8rpx;
+}
+
+/* col 2-7 + 安全距离 */
+.mf-template__cell--center {
+  grid-column: 2 / 8;
+  padding-left: var(--mf-center-gap);
+  padding-right: var(--mf-center-gap);
+}
+
+/* col 8 */
+.mf-template__cell--right {
+  grid-column: 8 / 9;
+  justify-content: center;
+  padding-left: 8rpx;
+}
+
+/* 中间对齐 */
+.mf-template--left .mf-template__cell--center {
+  justify-content: flex-start;
+  text-align: left;
+}
+
+.mf-template--center .mf-template__cell--center {
+  justify-content: center;
+  text-align: center;
+}

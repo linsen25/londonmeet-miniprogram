@@ -1,0 +1,8 @@
+{
+  "component": true,
+  "usingComponents": {
+    "mf-deadline-pill": "/components/mf-deadline-pill/index",
+    "van-icon": "@vant/weapp/icon/index"
+  }
+}
+  

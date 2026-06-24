@@ -1,0 +1,38 @@
+{
+  "description": "LondonMeet WeChat mini program",
+  "miniprogramRoot": "./",
+  "srcMiniprogramRoot": "./",
+  "setting": {
+    "es6": false,
+    "postcss": false,
+    "minified": false,
+    "uglifyFileName": false,
+    "enhance": false,
+    "packNpmRelationList": [],
+    "babelSetting": {
+      "ignore": [],
+      "disablePlugins": [],
+      "outputPath": ""
+    },
+    "useCompilerPlugins": [
+      "typescript",
+      "sass"
+    ],
+    "minifyWXML": true,
+    "minifyWXSS": true,
+    "skylineRenderEnable": true,
+    "ignoreUploadUnusedFiles": true
+  },
+  "compileType": "miniprogram",
+  "simulatorPluginLibVersion": {},
+  "packOptions": {
+    "ignore": [],
+    "include": []
+  },
+  "appid": "wx1f685f2109d776a0",
+  "libVersion": "2.32.3",
+  "editorSetting": {
+    "tabIndent": "insertSpaces",
+    "tabSize": 2
+  }
+}

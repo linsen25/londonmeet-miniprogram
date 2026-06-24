@@ -1,0 +1,38 @@
+.mf-shell {
+  box-sizing: border-box;
+  width: 100%;
+  display: block;
+  overflow: visible;
+}
+
+.mf-shell__content {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* ✅ 默认：垂直居中 + 水平拉伸（子元素默认占满宽度） */
+.mf-shell--center .mf-shell__content {
+  display: flex;
+  flex-direction: column;
+
+  align-items: stretch;     /* 默认铺满宽度 */
+  justify-content: center;  /* 垂直居中 */
+}
+
+/* 列表/表单：从上往下堆 */
+.mf-shell--stack .mf-shell__content {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.mf-shell--shadow {
+  box-shadow: 0 12rpx 28rpx rgba(0, 0, 0, 0.08);
+}
+
+.mf-shell--clickable {
+  transition: transform 120ms ease;
+}
+.mf-shell--clickable:active {
+  transform: scale(0.99);
+}
