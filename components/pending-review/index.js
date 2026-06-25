@@ -25,26 +25,25 @@ function enrichReview(item) {
   const preview = applicationText
     ? `${Array.from(applicationText).slice(0, 4).join("")}${Array.from(applicationText).length > 4 ? "…" : ""}`
     : "未填写";
+  const ratings = [
+    item.punctualRating,
+    item.communicationRating,
+    item.friendlyRating
+  ]
+    .map(Number)
+    .filter((value) => Number.isFinite(value) && value > 0);
+  const overallRating = ratings.length
+    ? ratings.reduce((sum, value) => sum + value, 0) / ratings.length
+    : 5;
+
   return {
     ...item,
     applicationText,
     applicationPreview: preview,
     fullApplicationText: applicationText || "未填写报名申请",
-    punctualText: formatRating(item.punctualRating),
-    communicationText: formatRating(item.communicationRating),
-    friendlyText: formatRating(item.friendlyRating),
-    hasMemberRating: [
-      item.punctualRating,
-      item.communicationRating,
-      item.friendlyRating
-    ].some((value) => value != null),
+    overallRatingText: `${overallRating.toFixed(1)}/5`,
     appliedText: formatAppliedText(item.appliedAt)
   };
-}
-
-function formatRating(value) {
-  const rating = Number(value);
-  return Number.isFinite(rating) && rating > 0 ? `${rating.toFixed(1)}/5` : "暂无评价";
 }
 
 Component({
@@ -148,7 +147,14 @@ Component({
       this.setData({ actingId: id });
 
       action(id)
-        .then(() => {
+        .then((result) => {
+          if (result && result.status === "pending") {
+            wx.showToast({
+              title: "名额已满，申请继续等待",
+              icon: "none"
+            });
+            return;
+          }
           const reviewers = this.data.reviewers.filter((item) => String(item.registrationId) !== String(id));
           const selectedReview = this.data.selectedReview;
           const isSelected = selectedReview && String(selectedReview.registrationId) === String(id);

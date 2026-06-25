@@ -7,7 +7,8 @@ const {
 const {
   fetchMyOngoingActivityPosts,
   fetchPendingReviews,
-  updateActivityFavorite
+  updateActivityFavorite,
+  cancelActivityRegistration
 } = require("../../api/activity");
 const { fetchReviewTasks } = require("../../api/review");
 const { fetchNotificationUnreadCount } = require("../../api/notification");
@@ -21,7 +22,7 @@ Component({
     sevenHalfRowH: "1200rpx",
 
     profile: {
-      coverUrl: "https://dummyimage.com/1200x800/2b2b2b/ffffff.png&text=Cover",
+      coverUrl: "",
       avatarUrl: "https://dummyimage.com/300x300/ffffff/111111.png&text=Avatar",
       name: "MeetFun User",
       userId: "",
@@ -62,6 +63,22 @@ Component({
 
     reviewEventPosts: [],
     reviewMemberPosts: []
+    ,
+    showCancelRegistration: false,
+    cancelActivityId: null,
+    cancelActivityTitle: "",
+    cancelActivityStartAt: 0,
+    cancelReasonType: "",
+    cancelReasonText: "",
+    cancelReasonLength: 0,
+    cancelSubmitting: false,
+    cancelReasons: [
+      { key: "time_conflict", label: "时间冲突" },
+      { key: "temporary_issue", label: "临时有事" },
+      { key: "activity_changed", label: "活动信息变更" },
+      { key: "location_inconvenient", label: "地点不便" },
+      { key: "other", label: "其他" }
+    ]
   },
 
   lifetimes: {
@@ -84,11 +101,43 @@ Component({
       this.loadPendingReviewCount();
       this.loadReviewTasks();
       this.loadNotificationUnreadCount();
+      this.startBadgeRefresh();
+    },
+    detached() {
+      this.stopBadgeRefresh();
+    }
+  },
+
+  pageLifetimes: {
+    show() {
+      this.startBadgeRefresh();
+      this.refreshBadges();
+    },
+    hide() {
+      this.stopBadgeRefresh();
     }
   },
 
   methods: {
     noop() {},
+
+    refreshBadges() {
+      this.loadPendingReviewCount();
+      this.loadNotificationUnreadCount();
+    },
+
+    startBadgeRefresh() {
+      if (this._badgeRefreshTimer) return;
+      this._badgeRefreshTimer = setInterval(() => {
+        this.refreshBadges();
+      }, 10000);
+    },
+
+    stopBadgeRefresh() {
+      if (!this._badgeRefreshTimer) return;
+      clearInterval(this._badgeRefreshTimer);
+      this._badgeRefreshTimer = null;
+    },
 
     passTouchStart(e) {
       this.triggerEvent("passthroughstart", e);
@@ -403,7 +452,102 @@ Component({
     onTapCard(e) {
       const id = e.detail && e.detail.id;
       if (!id) return;
-      this.triggerEvent("openpost", { id });
+      const item = (this.data.outer2Posts || []).find((post) => post._id === id || post.id === id);
+      if (!item) return;
+      wx.showActionSheet({
+        itemList: ["查看活动", "取消报名"],
+        success: (res) => {
+          if (res.tapIndex === 0) {
+            this.triggerEvent("openpost", { id });
+            return;
+          }
+          if (res.tapIndex === 1) {
+            this.setData({
+              showCancelRegistration: true,
+              cancelActivityId: id,
+              cancelActivityTitle: item.title || "",
+              cancelActivityStartAt: item.startAt || 0,
+              cancelReasonType: "",
+              cancelReasonText: "",
+              cancelReasonLength: 0
+            });
+          }
+        }
+      });
+    },
+
+    onCloseCancelRegistration() {
+      if (this.data.cancelSubmitting) return;
+      this.setData({
+        showCancelRegistration: false,
+        cancelActivityId: null,
+        cancelReasonType: "",
+        cancelReasonText: "",
+        cancelReasonLength: 0
+      });
+    },
+
+    onSelectCancelReason(e) {
+      const key = e.currentTarget.dataset.key || "";
+      this.setData({
+        cancelReasonType: key,
+        cancelReasonText: key === "other" ? this.data.cancelReasonText : "",
+        cancelReasonLength: key === "other" ? this.data.cancelReasonLength : 0
+      });
+    },
+
+    onCancelReasonInput(e) {
+      const value = String(e.detail.value || "").slice(0, 100);
+      this.setData({
+        cancelReasonText: value,
+        cancelReasonLength: value.length
+      });
+    },
+
+    onSubmitCancelRegistration() {
+      if (this.data.cancelSubmitting) return;
+      if (!this.data.cancelReasonType) {
+        wx.showToast({ title: "请选择取消原因", icon: "none" });
+        return;
+      }
+      if (this.data.cancelReasonType === "other" && !this.data.cancelReasonText.trim()) {
+        wx.showToast({ title: "请填写其他原因", icon: "none" });
+        return;
+      }
+
+      wx.showModal({
+        title: "确认取消报名",
+        content: "取消后不可恢复；如报名已通过，将立即释放名额。如果你已加入群聊，请自行退出活动群。",
+        confirmText: "确认取消",
+        confirmColor: "#ee4d4d",
+        success: (res) => {
+          if (!res.confirm) return;
+          this.setData({ cancelSubmitting: true });
+          cancelActivityRegistration(this.data.cancelActivityId, {
+            reasonType: this.data.cancelReasonType,
+            reasonText: this.data.cancelReasonText.trim()
+          })
+            .then(() => {
+              const id = this.data.cancelActivityId;
+              this.setData({
+                outer2Posts: (this.data.outer2Posts || []).filter(
+                  (item) => item._id !== id && item.id !== id
+                ),
+                showCancelRegistration: false,
+                cancelActivityId: null,
+                cancelReasonType: "",
+                cancelReasonText: "",
+                cancelReasonLength: 0
+              });
+              wx.showToast({ title: "已取消报名", icon: "success" });
+              this.loadProfile();
+            })
+            .catch((err) => {
+              wx.showToast({ title: err.message || "取消报名失败", icon: "none" });
+            })
+            .finally(() => this.setData({ cancelSubmitting: false }));
+        }
+      });
     },
 
     onOuter2FavoriteChange(e) {
@@ -443,6 +587,10 @@ Component({
       this.triggerEvent("openhistory");
     },
 
+    onTapMyActivities() {
+      this.triggerEvent("openmyactivities");
+    },
+
     syncFavoriteState(detail) {
       const id = detail && detail.id;
       if (!id) return;
@@ -463,6 +611,11 @@ Component({
       } else if (value === "review") {
         this.loadReviewTasks(this.data.outer2ReviewTabValue === "member" ? "member" : "activity");
       }
+    },
+
+    openReviewTasks() {
+      this.setData({ outer2TabValue: "review" });
+      this.loadReviewTasks(this.data.outer2ReviewTabValue === "member" ? "member" : "activity");
     },
 
     onOuter2ReviewTabChange(e) {

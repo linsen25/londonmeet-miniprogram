@@ -7,6 +7,7 @@ const ACTIVITY_ENDPOINTS = {
   create: "/v1/activities",
   list: "/v1/activities",
   myOngoing: "/v1/activities/me/ongoing",
+  myCreated: "/v1/activities/me/created",
   myFavorites: "/v1/activities/me/favorites",
   myHistory: "/v1/activities/me/history",
   pendingReview: "/v1/activities/pending-review",
@@ -15,8 +16,11 @@ const ACTIVITY_ENDPOINTS = {
   detail: "/v1/activities/:id",
   apply: "/v1/activities/:id/apply",
   joinGroup: "/v1/activities/:id/join-group",
+  cancelRegistration: "/v1/activities/:id/cancel-registration",
   favorite: "/v1/activities/:id/favorite",
-  report: "/v1/activities/:id/report"
+  report: "/v1/activities/:id/report",
+  update: "/v1/activities/:id",
+  updateQr: "/v1/activities/:id/invite-qr"
 };
 
 function resolveAssetUrl(url) {
@@ -44,7 +48,8 @@ function normalizePost(raw) {
     startAt: Number(post.startAt) || 0,
     endAt: Number(post.endAt) || 0,
     ended: Number(post.endAt) > 0 && Number(post.endAt) <= Date.now(),
-    progressGif: post.progressGif || ""
+    progressGif: post.progressGif || "",
+    registrationStatus: post.registrationStatus || ""
   };
 }
 
@@ -76,6 +81,18 @@ function fetchMyOngoingActivityPosts(params) {
       page,
       pageSize
     }
+  }).then((res) => ({
+    ...res,
+    list: (res.list || []).map(normalizePost)
+  }));
+}
+
+function fetchMyCreatedActivityPosts(params) {
+  const { page = 1, pageSize = 50 } = params || {};
+  return request({
+    url: ACTIVITY_ENDPOINTS.myCreated,
+    method: "GET",
+    data: { page, pageSize }
   }).then((res) => ({
     ...res,
     list: (res.list || []).map(normalizePost)
@@ -123,6 +140,7 @@ function normalizeActivityDetail(raw) {
     coverUrl,
     imageUrls: images.length ? images.map(resolveAssetUrl) : (coverUrl ? [coverUrl] : []),
     tags: Array.isArray(detail.tags) ? detail.tags.filter(Boolean) : [],
+    tagIds: Array.isArray(detail.tagIds) ? detail.tagIds.map(Number).filter(Boolean) : [],
     startAt: Number(detail.startAt) || 0,
     endAt: Number(detail.endAt) || 0,
     joinedCount: Number(detail.joinedCount) || 0,
@@ -131,6 +149,10 @@ function normalizeActivityDetail(raw) {
     locationText: detail.locationText || "",
     mapImageUrl: resolveAssetUrl(detail.mapImageUrl || ""),
     inviteQrUrl: resolveAssetUrl(detail.inviteQrUrl || ""),
+    qrExpiresAt: Number(detail.qrExpiresAt) || 0,
+    editCount: Number(detail.editCount) || 0,
+    canEdit: !!detail.canEdit,
+    editBlockedReason: detail.editBlockedReason || "",
     isCreator: !!detail.isCreator,
     favoriteCount: Number(detail.favoriteCount) || 0,
     favorited: !!detail.favorited,
@@ -182,6 +204,14 @@ function joinActivityGroup(id) {
   });
 }
 
+function cancelActivityRegistration(id, payload) {
+  return request({
+    url: ACTIVITY_ENDPOINTS.cancelRegistration.replace(":id", id),
+    method: "POST",
+    data: payload || {}
+  });
+}
+
 function fetchPendingReviews() {
   return request({
     url: ACTIVITY_ENDPOINTS.pendingReview,
@@ -211,6 +241,22 @@ function createActivity(payload) {
   }).then(normalizePost);
 }
 
+function updateActivity(id, payload) {
+  return request({
+    url: ACTIVITY_ENDPOINTS.update.replace(":id", id),
+    method: "PUT",
+    data: payload || {}
+  }).then(normalizeActivityDetail);
+}
+
+function updateActivityQr(id, payload) {
+  return request({
+    url: ACTIVITY_ENDPOINTS.updateQr.replace(":id", id),
+    method: "PUT",
+    data: payload || {}
+  }).then(normalizeActivityDetail);
+}
+
 function updateActivityFavorite(params) {
   const { id, favorited } = params || {};
 
@@ -233,16 +279,20 @@ module.exports = {
   ACTIVITY_ENDPOINTS,
   applyActivity,
   approveActivityRegistration,
+  cancelActivityRegistration,
   createActivity,
   fetchActivityDetail,
   fetchActivityPosts,
   fetchFavoriteActivityPosts,
   fetchHistoryActivityPosts,
   fetchMyOngoingActivityPosts,
+  fetchMyCreatedActivityPosts,
   fetchPendingReviews,
   joinActivityGroup,
   resolveAssetUrl,
   rejectActivityRegistration,
   reportActivity,
-  updateActivityFavorite
+  updateActivityFavorite,
+  updateActivity,
+  updateActivityQr
 };

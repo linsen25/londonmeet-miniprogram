@@ -38,6 +38,7 @@
         bind:openpendingreview="onOpenPendingReview"
         bind:openfavorites="onOpenFavorites"
         bind:openhistory="onOpenHistory"
+        bind:openmyactivities="onOpenMyActivities"
         bind:openfeedback="onOpenFeedback"
         bind:openreviewrate="onOpenReviewRate"
         bind:opennotifications="onOpenNotifications"
@@ -45,7 +46,7 @@
       />
     </view>
 
-    <view wx:if="{{!showPost && !showPendingReview && !showFavorites && !showHistory && !showNotifications && !showReviewRate && !showCreatePost && !showSearch && !showFeedback}}" class="bottom-nav">
+    <view wx:if="{{!showPost && !showPendingReview && !showFavorites && !showHistory && !showMyActivities && !showNotifications && !showReviewRate && !showCreatePost && !showSearch && !showFeedback}}" class="bottom-nav">
       <view
         class="bottom-nav__item {{activeTab === 'activity' ? 'is-active' : ''}}"
         bindtap="onTabActivity"
@@ -118,6 +119,14 @@
     />
   </view>
 
+  <view wx:if="{{showMyActivities}}" class="favorites-overlay">
+    <my-activities
+      bind:close="onCloseMyActivities"
+      bind:openpost="onOpenMyActivityPost"
+      bind:edit="onEditMyActivity"
+    />
+  </view>
+
   <view wx:if="{{showNotifications}}" class="notification-overlay">
     <notification-center
       bind:close="onCloseNotifications"
@@ -144,8 +153,11 @@
     style="transform: translateX({{createPostTranslateX}}px); transition: {{createPostTransition}};"
   >
     <createpost-view
+      mode="{{createPostMode}}"
+      activity-id="{{editActivityId}}"
       bind:close="onCreatePostClose"
       bind:created="onCreatePostCreated"
+      bind:updated="onCreatePostUpdated"
     />
   </view>
 

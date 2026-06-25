@@ -12,9 +12,9 @@
         padding="0"
         shadow
       >
-        <view
-  class="profile-hero"
-  style="height: {{threeRowH}}; background-image: url({{profile.coverUrl}});"
+<view
+  class="profile-hero {{profile.coverUrl ? 'has-cover' : 'no-cover'}}"
+  style="height: {{threeRowH}}; background-image: {{profile.coverUrl ? 'url(' + profile.coverUrl + ')' : 'none'}};"
 >
           <!-- 左上角：更多（保留） -->
           <view class="profile-more" bindtap="onTapMore">
@@ -103,8 +103,12 @@
             <text class="edit-profile-close" bindtap="onCloseEditProfile">×</text>
           </view>
 
-          <view class="edit-cover-preview" style="background-image: url({{profile.coverUrl}});" bindtap="onChooseCover">
-            <text class="edit-cover-text">更换背景图</text>
+          <view
+            class="edit-cover-preview {{profile.coverUrl ? 'has-cover' : 'no-cover'}}"
+            style="background-image: {{profile.coverUrl ? 'url(' + profile.coverUrl + ')' : 'none'}};"
+            bindtap="onChooseCover"
+          >
+            <text class="edit-cover-text">{{profile.coverUrl ? '更换背景图' : '上传背景图'}}</text>
           </view>
 
           <view class="edit-identity">
@@ -241,6 +245,26 @@
         <view class="mid">
           <view class="t1">历史活动</view>
           <view class="t2">查看已结束且报名通过的活动</view>
+        </view>
+        <view slot="right" class="arrow">
+          <van-icon name="arrow" size="22px" color="#FFFFFF" />
+        </view>
+      </mf-template>
+
+      <mf-template
+        rows="1"
+        density="md"
+        align="left"
+        bg="rgb(46,46,46)"
+        customStyle="margin:0 24rpx;width:auto;"
+        bind:rowtap="onTapMyActivities"
+      >
+        <view slot="left" class="pending-entry-icon">
+          <van-icon name="records" size="24px" color="#FFFFFF" />
+        </view>
+        <view class="mid">
+          <view class="t1">我的活动</view>
+          <view class="t2">管理我创建的活动与群二维码</view>
         </view>
         <view slot="right" class="arrow">
           <van-icon name="arrow" size="22px" color="#FFFFFF" />
@@ -442,6 +466,53 @@
           <text>联系我们</text>
           <text class="contact-email">liulinsen2517@gmail.com</text>
         </view>
+      </view>
+    </view>
+
+    <view wx:if="{{showCancelRegistration}}" class="cancel-mask" bindtap="onCloseCancelRegistration">
+      <view class="cancel-panel" catchtap="noop">
+        <view class="cancel-handle"></view>
+        <view class="cancel-head">
+          <view>
+            <view class="cancel-title">取消报名</view>
+            <view class="cancel-activity">「{{cancelActivityTitle}}」</view>
+          </view>
+          <view class="cancel-close" bindtap="onCloseCancelRegistration">
+            <van-icon name="cross" size="22px" color="#FFFFFF" />
+          </view>
+        </view>
+
+        <view class="cancel-tip">
+          仅可在活动开始前至少12小时取消。取消成功后会立即释放名额，并将原因通知发起者。
+        </view>
+
+        <view class="cancel-label">请选择原因</view>
+        <view class="cancel-reasons">
+          <view
+            wx:for="{{cancelReasons}}"
+            wx:key="key"
+            class="cancel-chip {{cancelReasonType === item.key ? 'is-active' : ''}}"
+            data-key="{{item.key}}"
+            bindtap="onSelectCancelReason"
+          >{{item.label}}</view>
+        </view>
+
+        <view wx:if="{{cancelReasonType === 'other'}}" class="cancel-other">
+          <textarea
+            class="cancel-textarea"
+            value="{{cancelReasonText}}"
+            maxlength="100"
+            placeholder="请填写取消原因，最多100字"
+            placeholder-class="cancel-placeholder"
+            bindinput="onCancelReasonInput"
+          ></textarea>
+          <view class="cancel-counter">{{cancelReasonLength}} / 100</view>
+        </view>
+
+        <view
+          class="cancel-submit {{cancelSubmitting ? 'is-disabled' : ''}}"
+          bindtap="onSubmitCancelRegistration"
+        >{{cancelSubmitting ? '提交中...' : '确认取消报名'}}</view>
       </view>
     </view>
   </view>

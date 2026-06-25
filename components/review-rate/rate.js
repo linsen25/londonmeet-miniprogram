@@ -205,28 +205,18 @@ Component({
       const average = this.getAverage(items);
       const title = this.properties.itemTitle || "该项目";
 
-      wx.showModal({
-        title: "确认提交评价",
-        content: `确定提交对「${title}」的评价吗？提交后这条待评价会完成。`,
-        confirmText: "提交",
-        cancelText: "再想想",
-        success: (res) => {
-          if (!res.confirm) return;
-
-          this.triggerEvent("submit", {
-            mode: this.data.mode,
-            title,
-            itemId: this.properties.itemId,
-            activityId: this.properties.activityId,
-            targetId: this.properties.targetId,
-            average,
-            items: items.map((item) => ({
-              key: item.key,
-              label: item.label,
-              value: Number(item.value || 0)
-            }))
-          });
-        }
+      this.triggerEvent("submit", {
+        mode: this.data.mode,
+        title,
+        itemId: this.properties.itemId,
+        activityId: this.properties.activityId,
+        targetId: this.properties.targetId,
+        average,
+        items: items.map((item) => ({
+          key: item.key,
+          label: item.label,
+          value: Number(item.value || 0)
+        }))
       });
     }
   },

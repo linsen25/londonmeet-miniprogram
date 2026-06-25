@@ -1,0 +1,50 @@
+<view class="my-root" bindtap="onClose">
+  <view class="my-panel" catchtap="noop">
+    <view class="my-handle"></view>
+    <view class="my-topbar">
+      <view class="my-title">我的活动</view>
+      <view class="my-close" bindtap="onClose">
+        <van-icon name="cross" size="22px" color="#FFFFFF" />
+      </view>
+    </view>
+
+    <scroll-view class="my-list" scroll-y="true" enhanced="true">
+      <view wx:if="{{loading}}" class="my-empty">加载中...</view>
+      <view wx:elif="{{!posts.length}}" class="my-empty">暂无正在进行或即将开始的自建活动</view>
+      <view wx:else class="my-masonry">
+        <view class="my-item" wx:for="{{posts}}" wx:key="_id">
+          <card data="{{item}}" bind:tapcard="onTapCard" />
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+
+  <van-popup
+    show="{{showQrPopup}}"
+    position="bottom"
+    round
+    custom-style="background:#212121;"
+    bind:close="onCloseQrPopup"
+    catchtap="noop"
+  >
+    <view class="qr-popup">
+      <view class="qr-title">修改群二维码</view>
+      <view class="qr-sub">「{{qrActivityTitle}}」</view>
+      <view class="qr-tip">上传后会保存真实的 Cloudinary 图片地址，并通知所有已通过参与者。</view>
+      <group-qr-uploader
+        id="replaceQrUploader"
+        bind:change="onQrUploaderChange"
+      />
+      <mf-button
+        text="{{qrSaving ? '保存中...' : '保存并通知参与者'}}"
+        bg="#16c35b"
+        color="#ffffff"
+        height="88rpx"
+        radius="22rpx"
+        loading="{{qrSaving}}"
+        disabled="{{qrSaving}}"
+        bind:tap="onSaveQr"
+      />
+    </view>
+  </van-popup>
+</view>

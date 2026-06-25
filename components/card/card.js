@@ -26,7 +26,8 @@ Component({
     progressText: "",
     isFull: false,
     isEnded: false,
-    innerFavorited: false
+    innerFavorited: false,
+    statusText: ""
   },
 
   observers: {
@@ -55,7 +56,8 @@ Component({
         progressText: this.resolveProgressText(card),
         isFull: this.resolveIsFull(card),
         isEnded: !!card.ended || (Number(card.endAt) > 0 && Number(card.endAt) <= Date.now()),
-        innerFavorited: !!card.favorited
+        innerFavorited: !!card.favorited,
+        statusText: this.resolveStatusText(card.registrationStatus)
       });
     },
 
@@ -95,6 +97,13 @@ Component({
       const joined = Math.max(0, Number(card.joinedCount) || 0);
       const total = Math.max(0, Number(card.totalCount) || 0);
       return total > 0 && joined >= total;
+    },
+
+    resolveStatusText(status) {
+      if (status === "pending") return "待审核";
+      if (status === "approved") return "已通过";
+      if (status === "joined_group") return "已入群";
+      return "";
     },
 
     onTap() {

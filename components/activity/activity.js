@@ -21,10 +21,52 @@ Component({
         refresh: true,
         source: "init"
       });
+      this.startRealtimeRefresh();
+    },
+    detached() {
+      this.stopRealtimeRefresh();
+    }
+  },
+
+  pageLifetimes: {
+    show() {
+      this.startRealtimeRefresh();
+      this.refreshActivityPostsSilently();
+    },
+    hide() {
+      this.stopRealtimeRefresh();
     }
   },
 
   methods: {
+    startRealtimeRefresh() {
+      if (this._realtimeTimer) return;
+      this._realtimeTimer = setInterval(() => {
+        this.refreshActivityPostsSilently();
+      }, 10000);
+    },
+
+    stopRealtimeRefresh() {
+      if (!this._realtimeTimer) return;
+      clearInterval(this._realtimeTimer);
+      this._realtimeTimer = null;
+    },
+
+    refreshActivityPostsSilently() {
+      if (this.data.loading) return Promise.resolve();
+
+      return fetchActivityPosts({
+        range: this.data.navValue || "day",
+        page: 1,
+        pageSize: 20,
+        refresh: true
+      }).then((res) => {
+        this.setData({ posts: res.list || [] });
+      }).catch((err) => {
+        console.error("[activity realtime refresh failed]", err);
+      });
+    },
+
     onSearchTap() {
       this.triggerEvent("search");
     },

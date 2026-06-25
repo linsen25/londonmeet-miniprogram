@@ -9,6 +9,7 @@ Page({
     showPendingReview: false,
     showFavorites: false,
     showHistory: false,
+    showMyActivities: false,
     showNotifications: false,
     showReviewRate: false,
     reviewRateMode: "activity",
@@ -28,7 +29,9 @@ Page({
     postTransition: "none",
     showCreatePost: false,
     createPostTranslateX: 0,
-    createPostTransition: "none"
+    createPostTransition: "none",
+    createPostMode: "create",
+    editActivityId: null
   },
 
   _windowW: 375,
@@ -185,6 +188,30 @@ Page({
     this.setData({ showHistory: true });
   },
 
+  onOpenMyActivities() {
+    this.setData({ showMyActivities: true });
+  },
+
+  onCloseMyActivities() {
+    this.setData({ showMyActivities: false });
+  },
+
+  onOpenMyActivityPost(event) {
+    const id = event && event.detail ? event.detail.id : "";
+    if (!id) return;
+    this.setData({ showMyActivities: false }, () => {
+      this.onOpenPost({ detail: { id } });
+    });
+  },
+
+  onEditMyActivity(event) {
+    const id = event && event.detail ? event.detail.id : "";
+    if (!id) return;
+    this.setData({ showMyActivities: false }, () => {
+      this.onOpenCreatePost(id);
+    });
+  },
+
   onCloseHistory() {
     this.setData({ showHistory: false });
   },
@@ -244,8 +271,20 @@ Page({
     const detail = e.detail || {};
     const relatedType = detail.relatedType || "";
     const relatedId = detail.relatedId;
+    const type = detail.type || "";
 
     this.setData({ showNotifications: false }, () => {
+      if (type === "review_available" || type === "review_reminder") {
+        this.setData({ activeTab: "home" }, () => {
+          setTimeout(() => {
+            const homeView = this.selectComponent("#homeView");
+            if (homeView && typeof homeView.openReviewTasks === "function") {
+              homeView.openReviewTasks();
+            }
+          }, 30);
+        });
+        return;
+      }
       if (relatedType === "pending_review") {
         this.setData({ showPendingReview: true });
         return;
@@ -347,6 +386,11 @@ Page({
         postTranslateX: 0,
         postTransition: "none"
       });
+
+      const activityView = this.selectComponent("#activityView");
+      if (activityView && typeof activityView.refreshActivityPostsSilently === "function") {
+        activityView.refreshActivityPostsSilently();
+      }
     }, D);
   },
 
@@ -355,11 +399,14 @@ Page({
     this._postTouchInSwiper = !!(d && d.inSwiper);
   },
 
-  onOpenCreatePost() {
+  onOpenCreatePost(activityId) {
     const W = this._windowW || 375;
+    const editId = Number(activityId) || null;
 
     this.setData({
       showCreatePost: true,
+      createPostMode: editId ? "edit" : "create",
+      editActivityId: editId,
       createPostTranslateX: W,
       createPostTransition: "none"
     });
@@ -384,6 +431,8 @@ Page({
     setTimeout(() => {
       this.setData({
         showCreatePost: false,
+        createPostMode: "create",
+        editActivityId: null,
         createPostTranslateX: 0,
         createPostTransition: "none"
       });
@@ -401,6 +450,11 @@ Page({
         });
       }
     });
+    this.onCreatePostClose();
+  },
+
+  onCreatePostUpdated() {
+    wx.showToast({ title: "活动已修改", icon: "success" });
     this.onCreatePostClose();
   },
 

@@ -1,0 +1,49 @@
+<view class="qr-upload">
+  <view wx:if="{{fileList.length}}" class="qr-preview" bindtap="onPreview">
+    <image class="qr-preview__image" src="{{fileList[0].url}}" mode="aspectFit" />
+    <view wx:if="{{uploading}}" class="qr-preview__mask">
+      <text>正在上传到 Cloudinary...</text>
+    </view>
+    <view wx:elif="{{fileList[0].status === 'failed'}}" class="qr-preview__mask qr-preview__mask--failed">
+      <text>上传失败，请删除后重试</text>
+    </view>
+    <view wx:else class="qr-preview__hint">点击查看大图</view>
+  </view>
+
+  <van-uploader
+    file-list="{{fileList}}"
+    max-count="1"
+    max-size="{{maxSize}}"
+    preview-image="{{false}}"
+    disabled="{{uploading}}"
+    bind:before-read="beforeRead"
+    bind:after-read="afterRead"
+    bind:delete="onDelete"
+    bind:oversize="onOversize"
+  >
+    <view class="qr-upload__button">
+      <van-icon name="photograph" size="22px" color="#FFFFFF" />
+      <text>{{fileList.length ? '重新选择二维码' : '选择群二维码'}}</text>
+    </view>
+  </van-uploader>
+
+  <view wx:if="{{fileList.length}}" class="qr-delete" bindtap="onDelete">删除当前二维码</view>
+
+  <view class="qr-days" bindtap="onOpenDaysPicker">
+    <view>
+      <view class="qr-days__title">二维码剩余有效期</view>
+      <view class="qr-days__sub">{{reminderText}}</view>
+    </view>
+    <view class="qr-days__value">{{daysDisplay}} ›</view>
+  </view>
+
+  <van-popup show="{{showDaysPicker}}" position="bottom" round bind:close="onCloseDaysPicker">
+    <van-picker
+      show-toolbar
+      title="选择二维码剩余有效期"
+      columns="{{dayColumns}}"
+      bind:cancel="onCloseDaysPicker"
+      bind:confirm="onConfirmDaysPicker"
+    />
+  </van-popup>
+</view>

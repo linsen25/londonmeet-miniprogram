@@ -1,13 +1,9 @@
 {
   "component": true,
   "usingComponents": {
-    "mf-button": "/components/mf-button/index",
-    "group-qr-uploader": "/components/group-qr-uploader/index",
     "van-icon": "@vant/weapp/icon/index",
     "van-uploader": "@vant/weapp/uploader/index",
-    "van-calendar": "@vant/weapp/calendar/index",
     "van-popup": "@vant/weapp/popup/index",
-    "van-search": "@vant/weapp/search/index",
     "van-picker": "@vant/weapp/picker/index"
   }
 }

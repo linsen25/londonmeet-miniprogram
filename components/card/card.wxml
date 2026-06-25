@@ -1,5 +1,6 @@
 <view class="card {{isFull && dimFull ? 'card--full' : ''}} {{isEnded && dimEnded ? 'card--ended' : ''}}" bindtap="onTap">
   <view class="card__cover">
+    <view wx:if="{{statusText}}" class="card__status">{{statusText}}</view>
     <image
       class="card__img {{coverLoaded ? 'is-loaded' : ''}}"
       mode="aspectFill"

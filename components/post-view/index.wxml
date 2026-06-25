@@ -263,7 +263,12 @@
   <view class="popup-sub">请扫描二维码加入群聊，祝您活动愉快</view>
 
 
-    <image class="qr-img" mode="aspectFit" src="{{groupQrUrl}}" />
+    <image
+      class="qr-img"
+      mode="aspectFit"
+      src="{{groupQrUrl}}"
+      bindtap="onPreviewGroupQr"
+    />
 
 
   <view class="popup-hint">若二维码过期，请联系发起人更新</view>

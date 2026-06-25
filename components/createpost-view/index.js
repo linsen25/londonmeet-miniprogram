@@ -1,4 +1,8 @@
-const { createActivity } = require("../../api/activity");
+const {
+  createActivity,
+  fetchActivityDetail,
+  updateActivity
+} = require("../../api/activity");
 const { uploadImage } = require("../../api/cloudinary");
 const { fetchStaticMap } = require("../../api/map");
 const { fetchActivityTags } = require("../../api/tag");
@@ -14,6 +18,17 @@ function buildTagList(tags, selectedMap) {
 }
 
 Component({
+  properties: {
+    mode: {
+      type: String,
+      value: "create"
+    },
+    activityId: {
+      type: Number,
+      value: null
+    }
+  },
+
   data: {
     fileList: [],
     previewImages: [],
@@ -62,8 +77,8 @@ Component({
     timePickerTitle: "选择时间",
     timeColumns: [],
 
-    inviteFileList: [],
-    inviteDisplay: "请上传群二维码（必填）",
+    inviteQrRemainingDays: 7,
+    originalStartAt: 0,
 
     locationText: "",
     locationDisplay: "",
@@ -111,7 +126,11 @@ Component({
         ]
       });
 
-      this._loadTags();
+      this._loadTags().then(() => {
+        if (this.properties.mode === "edit" && this.properties.activityId) {
+          this._loadEditActivity();
+        }
+      });
     },
 
     detached() {
@@ -171,7 +190,7 @@ Component({
     },
 
     _loadTags() {
-      fetchActivityTags()
+      return fetchActivityTags()
         .then((tags) => {
           this.setData({
             allTags: tags,
@@ -182,6 +201,76 @@ Component({
           console.error("[activity tags request failed]", err);
           this._toast("标签加载失败");
         });
+    },
+
+    _loadEditActivity() {
+      wx.showLoading({ title: "加载活动...", mask: true });
+      return fetchActivityDetail(this.properties.activityId)
+        .then((detail) => {
+          if (!detail.isCreator) throw new Error("只有活动发起者可以修改");
+          if (!detail.canEdit) {
+            if (detail.editBlockedReason === "edit_limit_reached") {
+              throw new Error("该活动的一次修改机会已经使用完");
+            }
+            if (detail.editBlockedReason === "within_12_hours") {
+              throw new Error("距离原活动开始时间已不足12小时，不能修改");
+            }
+            throw new Error("该活动当前不可修改");
+          }
+
+          const tagIds = detail.tagIds || [];
+          const selectedTags = (this.data.allTags || []).filter((tag) => tagIds.includes(Number(tag.id)));
+          const selectedTagMap = {};
+          selectedTags.forEach((tag) => { selectedTagMap[tag.id] = true; });
+          const start = new Date(detail.startAt);
+          const end = new Date(detail.endAt);
+          const imageUrls = detail.imageUrls || [];
+
+          this.setData({
+            title: detail.title,
+            lastTitle: detail.title,
+            content: detail.content,
+            lastContent: detail.content,
+            contentLength: detail.content.length,
+            tagIds,
+            selectedTags,
+            selectedTagMap,
+            filteredTags: buildTagList(this.data.allTags, selectedTagMap),
+            tagsDisplay: selectedTags.map((tag) => tag.name).join(" "),
+            recruitCount: `${detail.totalCount}人`,
+            recruitDisplay: `${detail.totalCount}人`,
+            dateRange: [this._dateOnly(start), this._dateOnly(end)],
+            dateText: `${this._fmtDate(start)} - ${this._fmtDate(end)}`,
+            startTime: this._fmtTime(start),
+            startTimeDisplay: this._fmtTime(start),
+            endTime: this._fmtTime(end),
+            endTimeDisplay: this._fmtTime(end),
+            locationText: detail.locationText,
+            locationDisplay: detail.locationText,
+            mapImageUrl: detail.mapImageUrl,
+            fileList: imageUrls.map((url) => ({ url, status: "done", message: "" })),
+            originalStartAt: detail.startAt
+          }, () => this._syncPreviewImages());
+        })
+        .catch((err) => {
+          wx.showToast({ title: err.message || "活动加载失败", icon: "none" });
+          setTimeout(() => this.triggerEvent("close"), 1200);
+        })
+        .finally(() => wx.hideLoading());
+    },
+
+    _dateOnly(value) {
+      const date = new Date(value);
+      return new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
+    },
+
+    _fmtTime(value) {
+      const date = new Date(value);
+      let hour = date.getHours();
+      const period = hour >= 12 ? "PM" : "AM";
+      hour %= 12;
+      if (hour === 0) hour = 12;
+      return `${String(hour).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")} ${period}`;
     },
 
     _syncPreviewImages() {
@@ -313,59 +402,12 @@ Component({
       if (content.trim()) this._clearValidationError("content");
     },
 
-    onInviteAfterRead(e) {
-      const detail = (e && e.detail) || {};
-      const files = Array.isArray(detail.file) ? detail.file : [detail.file];
-      const first = files[0];
-      if (!first) return;
-
+    onGroupQrChange(event) {
+      const detail = event.detail || {};
       this.setData({
-        inviteFileList: [{
-          url: first.url,
-          localUrl: first.url,
-          name: first.name || "",
-          type: "image",
-          status: "uploading",
-          message: "上传中"
-        }],
-        inviteDisplay: "群二维码上传中..."
+        inviteQrRemainingDays: Number(detail.remainingDays) || 7
       });
-
-      uploadImage(first.url, { folder: "londonmeet/dev/group-qr" })
-        .then((result) => {
-          this.setData({
-            inviteFileList: [{
-              url: result.secureUrl,
-              publicId: result.publicId,
-              name: first.name || "",
-              type: "image",
-              status: "done"
-            }],
-            inviteDisplay: "已上传群二维码"
-          });
-          this._clearValidationError("invite");
-        })
-        .catch((err) => {
-          this.setData({
-            inviteFileList: [{
-              url: first.url,
-              localUrl: first.url,
-              name: first.name || "",
-              type: "image",
-              status: "failed",
-              message: "上传失败"
-            }],
-            inviteDisplay: "群二维码上传失败，请重试"
-          });
-          this._toast((err && err.message) || "群二维码上传失败");
-        });
-    },
-
-    onInviteDelete() {
-      this.setData({
-        inviteFileList: [],
-        inviteDisplay: "请上传群二维码（必填）"
-      });
+      if (detail.url) this._clearValidationError("invite");
     },
 
     onTapRecruitRow() {
@@ -681,10 +723,11 @@ Component({
         .filter((item) => item && item.status === "done")
         .map((item) => item && item.url)
         .filter(Boolean);
-      const inviteQrItem = this.data.inviteFileList && this.data.inviteFileList[0];
-      const inviteQrUrl = inviteQrItem && inviteQrItem.status === "done"
-        ? this.data.inviteFileList[0].url
-        : "";
+      const qrUploader = this.selectComponent("#createQrUploader");
+      const qrValue = this.properties.mode === "edit" || !qrUploader
+        ? { url: "", remainingDays: this.data.inviteQrRemainingDays, uploading: false, failed: false }
+        : qrUploader.getValue();
+      const inviteQrUrl = qrValue.url || "";
       const recruitCount = this._parseRecruitCount(this.data.recruitCount);
 
       if (activityFiles.some((item) => item && item.status === "uploading")) {
@@ -735,13 +778,13 @@ Component({
       if (!locationText) {
         return this._showValidationError("location", "活动地址未填写");
       }
-      if (inviteQrItem && inviteQrItem.status === "uploading") {
+      if (this.properties.mode !== "edit" && qrValue.uploading) {
         return this._showValidationError("invite", "加群码正在上传，请稍候");
       }
-      if (inviteQrItem && inviteQrItem.status === "failed") {
+      if (this.properties.mode !== "edit" && qrValue.failed) {
         return this._showValidationError("invite", "加群码上传失败，请重新上传");
       }
-      if (!inviteQrUrl) {
+      if (this.properties.mode !== "edit" && !inviteQrUrl) {
         return this._showValidationError("invite", "加群码未上传");
       }
 
@@ -758,7 +801,8 @@ Component({
         locationText,
         mapImageUrl: this.data.mapImageUrl || "",
         imageUrls,
-        inviteQrUrl
+        inviteQrUrl,
+        inviteQrRemainingDays: Number(qrValue.remainingDays) || 7
       };
     },
 
@@ -768,22 +812,41 @@ Component({
       const payload = this._buildSubmitPayload();
       if (!payload) return;
 
-      this.setData({ submitting: true });
-      wx.showLoading({ title: "创建中...", mask: true });
+      const editing = this.properties.mode === "edit";
+      const execute = () => {
+        this.setData({ submitting: true });
+        wx.showLoading({ title: editing ? "保存中..." : "创建中...", mask: true });
+        const request = editing
+          ? updateActivity(this.properties.activityId, payload)
+          : createActivity(payload);
 
-      createActivity(payload)
-        .then((activity) => {
-          wx.hideLoading();
-          wx.showToast({ title: "创建成功", icon: "success" });
-          this.setData({ submitting: false });
-          this.triggerEvent("created", { activity });
-        })
-        .catch((err) => {
-          wx.hideLoading();
-          console.error("[create activity failed]", err);
-          this.setData({ submitting: false });
-          this._toast((err && err.message) || "创建失败");
-        });
+        request
+          .then((activity) => {
+            wx.hideLoading();
+            wx.showToast({ title: editing ? "修改成功" : "创建成功", icon: "success" });
+            this.setData({ submitting: false });
+            this.triggerEvent(editing ? "updated" : "created", { activity });
+          })
+          .catch((err) => {
+            wx.hideLoading();
+            console.error(editing ? "[update activity failed]" : "[create activity failed]", err);
+            this.setData({ submitting: false });
+            this._toast((err && err.message) || (editing ? "修改失败" : "创建失败"));
+          });
+      };
+
+      if (!editing) {
+        execute();
+        return;
+      }
+      wx.showModal({
+        title: "确认修改活动",
+        content: "活动只能成功修改一次，开始时间只能往后延。保存后将通知所有已通过参与者。",
+        confirmText: "确认修改",
+        success: (res) => {
+          if (res.confirm) execute();
+        }
+      });
     }
   }
 });

@@ -4,7 +4,7 @@
       <van-icon name="arrow-left" size="22px" color="#FFFFFF" />
       <text class="back-text">返回</text>
     </view>
-    <text class="topbar-title">创建活动</text>
+    <text class="topbar-title">{{mode === 'edit' ? '修改活动' : '创建活动'}}</text>
     <view class="topbar-right"></view>
   </view>
 
@@ -126,6 +126,7 @@
           adjust-position="{{true}}"
           cursor-spacing="24"
           bindinput="onTitleInput"
+          disabled="{{mode === 'edit'}}"
         />
       </view>
       <view wx:if="{{validationErrorKey === 'title'}}" class="validation-message">{{validationErrorMessage}}</view>
@@ -202,7 +203,7 @@
       </view>
       <view wx:if="{{validationErrorKey === 'location'}}" class="validation-message">{{validationErrorMessage}}</view>
 
-      <view id="field-invite" class="group-block {{validationErrorKey === 'invite' ? 'validation-group-error' : ''}}">
+      <view wx:if="{{mode !== 'edit'}}" id="field-invite" class="group-block {{validationErrorKey === 'invite' ? 'validation-group-error' : ''}}">
         <view class="group-head">
           <text class="group-title">加群码</text>
         </view>
@@ -210,14 +211,10 @@
           <text>加群码填写帮助</text>
           <view class="help-button">?</view>
         </view>
-        <van-uploader
-          file-list="{{inviteFileList}}"
-          max-count="1"
+        <group-qr-uploader
+          id="createQrUploader"
           max-size="{{maxSize}}"
-          bind:before-read="beforeRead"
-          bind:after-read="onInviteAfterRead"
-          bind:delete="onInviteDelete"
-          bind:oversize="onOversize"
+          bind:change="onGroupQrChange"
         />
         <view wx:if="{{validationErrorKey === 'invite'}}" class="validation-message">{{validationErrorMessage}}</view>
       </view>
@@ -225,7 +222,7 @@
 
     <view class="submit-wrap">
       <mf-button
-        text="{{submitting ? '创建中...' : '创建活动'}}"
+        text="{{submitting ? '保存中...' : (mode === 'edit' ? '保存修改' : '创建活动')}}"
         bg="#16c35b"
         color="#ffffff"
         radius="24rpx"

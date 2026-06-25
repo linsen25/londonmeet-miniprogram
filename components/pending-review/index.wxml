@@ -63,19 +63,11 @@
 
       <view class="detail-section">
         <view class="detail-label">用户评价</view>
-        <view wx:if="{{!selectedReview.hasMemberRating}}" class="detail-rating-empty">暂无评价</view>
-        <view wx:else class="detail-rating-list">
+        <view class="detail-rating-list">
           <view class="detail-rating-row">
-            <text>准时守约</text>
-            <text>{{selectedReview.punctualText}}</text>
-          </view>
-          <view class="detail-rating-row">
-            <text>沟通配合</text>
-            <text>{{selectedReview.communicationText}}</text>
-          </view>
-          <view class="detail-rating-row">
-            <text>友善礼貌</text>
-            <text>{{selectedReview.friendlyText}}</text>
+            <text>综合评分</text>
+            <text>{{selectedReview.overallRatingText}}</text>
+            <van-icon name="star" size="28rpx" color="#FFD60A" />
           </view>
         </view>
       </view>

@@ -58,9 +58,23 @@
 }
 
 .card__cover {
+  position: relative;
   height: calc(100vh / 8 * 2.5);
   background: #222222;
   overflow: hidden;
+}
+
+.card__status {
+  position: absolute;
+  z-index: 2;
+  top: 16rpx;
+  left: 16rpx;
+  padding: 8rpx 14rpx;
+  border-radius: 999rpx;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.68);
+  font-size: 22rpx;
+  line-height: 1;
 }
 
 .card__img {

@@ -181,11 +181,16 @@ Component({
       const status = this.data.registrationStatus;
       const isFull = this.data.isFull;
       const isEnded = this.data.isEnded;
+      const isCreator = this.data.isCreator;
       let applyText = "报名";
       let applyDisabled = false;
       let applyBg = "#07C160";
 
-      if (isEnded) {
+      if (isCreator) {
+        applyText = "我发起的活动";
+        applyDisabled = true;
+        applyBg = "#6B6B70";
+      } else if (isEnded) {
         applyText = "已结束";
         applyDisabled = true;
         applyBg = "#6B6B70";
@@ -198,9 +203,8 @@ Component({
       } else if (status === "joined_group") {
         applyText = "已加入群聊";
       } else if (isFull) {
-        applyText = "人员已满";
-        applyDisabled = true;
-        applyBg = "#FF3B30";
+        applyText = "申请候补";
+        applyBg = "#FF9500";
       }
 
       this.setData({
@@ -361,6 +365,16 @@ Component({
     onCloseGroupPopup() {
       this.setData({
         showGroupPopup: false
+      });
+    },
+
+    onPreviewGroupQr() {
+      const url = this.data.groupQrUrl;
+      if (!url) return;
+
+      wx.previewImage({
+        current: url,
+        urls: [url]
       });
     },
 

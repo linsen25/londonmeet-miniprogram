@@ -1,0 +1,80 @@
+.my-root {
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,.48);
+  display: flex;
+  align-items: flex-end;
+  color: #fff;
+}
+
+.my-panel {
+  width: 100%;
+  height: 84vh;
+  padding: 14rpx 18rpx calc(20rpx + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+  border-radius: 24rpx 24rpx 0 0;
+  background: #212121;
+  display: flex;
+  flex-direction: column;
+  animation: myPanelIn 180ms ease-out both;
+}
+
+@keyframes myPanelIn {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.my-handle {
+  width: 72rpx;
+  height: 8rpx;
+  margin: 0 auto 10rpx;
+  border-radius: 999rpx;
+  background: rgba(255,255,255,.28);
+}
+
+.my-topbar {
+  min-height: 72rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.my-title { font-size: 34rpx; font-weight: 900; }
+.my-close {
+  position: absolute;
+  right: 0;
+  width: 64rpx;
+  height: 64rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.my-list { flex: 1; min-height: 0; margin-top: 12rpx; }
+.my-empty {
+  padding: 160rpx 20rpx;
+  color: rgba(255,255,255,.58);
+  font-size: 28rpx;
+  font-weight: 700;
+  text-align: center;
+}
+.my-masonry { column-count: 2; column-gap: 12rpx; }
+.my-item {
+  display: inline-block;
+  width: 100%;
+  margin-bottom: 12rpx;
+  break-inside: avoid;
+  vertical-align: top;
+}
+.qr-popup { padding: 34rpx 28rpx calc(30rpx + env(safe-area-inset-bottom)); }
+.qr-title { font-size: 34rpx; font-weight: 900; text-align: center; }
+.qr-sub { margin-top: 10rpx; text-align: center; color: rgba(255,255,255,.72); }
+.qr-tip {
+  margin: 28rpx 0;
+  padding: 22rpx;
+  border-radius: 18rpx;
+  background: rgba(255,255,255,.07);
+  color: rgba(255,255,255,.72);
+  line-height: 1.55;
+  font-size: 25rpx;
+}

@@ -2,7 +2,6 @@ const { API_BASE_URL, request } = require("../utils/request");
 
 const API_ORIGIN = API_BASE_URL.replace(/\/api\/?$/, "");
 const FALLBACK_AVATAR = "https://dummyimage.com/300x300/ffffff/111111.png&text=Avatar";
-const FALLBACK_COVER = "https://dummyimage.com/1200x800/2b2b2b/ffffff.png&text=Cover";
 const DEFAULT_MOTTO = "\u6765\u5427\uff0c\u8ba9\u6211\u8ba4\u8bc6\u66f4\u591a\u6709\u8da3\u7684\u4eba";
 const MAX_COVER_MB = 8;
 const MAX_COVER_BYTES = MAX_COVER_MB * 1024 * 1024;
@@ -26,7 +25,7 @@ function normalizeProfile(raw) {
     userId: profile.userId,
     name: profile.nickname || "MeetFun User",
     avatarUrl: resolveAssetUrl(profile.avatarUrl, FALLBACK_AVATAR),
-    coverUrl: resolveAssetUrl(profile.coverUrl, FALLBACK_COVER),
+    coverUrl: resolveAssetUrl(profile.coverUrl, ""),
     motto: profile.motto || DEFAULT_MOTTO,
     tags,
     stats: {
@@ -117,7 +116,7 @@ async function uploadProfileCover(filePath) {
         }
 
         if (res.statusCode >= 200 && res.statusCode < 300 && body.code === 200) {
-          resolve(resolveAssetUrl(body.data && body.data.coverUrl, FALLBACK_COVER));
+          resolve(resolveAssetUrl(body.data && body.data.coverUrl, ""));
           return;
         }
 

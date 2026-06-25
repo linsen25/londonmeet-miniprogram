@@ -21,7 +21,7 @@
    Profile Hero Card
    ========================= */
 
-   .profile-hero{
+  .profile-hero{
     width: 100%;
     height: 100%;
     border-radius: 0 0 18rpx 18rpx;
@@ -37,6 +37,12 @@
     padding-top: 18rpx;            /* 顶部留一点 */
   padding-bottom: 18rpx;         /* 底部留一点 */
   box-sizing: border-box;
+  }
+
+  .profile-hero.no-cover{
+    background:
+      radial-gradient(circle at 78% 18%, rgba(255,255,255,.08), transparent 34%),
+      linear-gradient(145deg, #3a3a3a, #242424);
   }
   
   /* 暗遮罩：保证字清晰 */
@@ -713,6 +719,125 @@
 .arrow--white{
   color: #fff;
 }
+
+.cancel-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: flex;
+  align-items: flex-end;
+  background: rgba(0,0,0,.58);
+}
+
+.cancel-panel {
+  width: 100%;
+  padding: 14rpx 28rpx calc(30rpx + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+  border-radius: 28rpx 28rpx 0 0;
+  background: #212121;
+  color: #fff;
+  animation: cancelPanelIn 180ms ease-out both;
+}
+
+@keyframes cancelPanelIn {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.cancel-handle {
+  width: 72rpx;
+  height: 8rpx;
+  margin: 0 auto 20rpx;
+  border-radius: 999rpx;
+  background: rgba(255,255,255,.28);
+}
+
+.cancel-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.cancel-title { font-size: 36rpx; font-weight: 900; }
+.cancel-activity {
+  margin-top: 8rpx;
+  color: rgba(255,255,255,.68);
+  font-size: 26rpx;
+}
+.cancel-close {
+  width: 64rpx;
+  height: 64rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.cancel-tip {
+  margin-top: 28rpx;
+  padding: 22rpx;
+  border-radius: 18rpx;
+  background: rgba(255,255,255,.07);
+  color: rgba(255,255,255,.68);
+  font-size: 25rpx;
+  line-height: 1.55;
+}
+.cancel-label {
+  margin-top: 30rpx;
+  font-size: 28rpx;
+  font-weight: 800;
+}
+.cancel-reasons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+  margin-top: 18rpx;
+}
+.cancel-chip {
+  padding: 18rpx 24rpx;
+  border: 1rpx solid rgba(255,255,255,.14);
+  border-radius: 999rpx;
+  background: rgba(255,255,255,.06);
+  color: rgba(255,255,255,.72);
+  font-size: 26rpx;
+}
+.cancel-chip.is-active {
+  border-color: #fff;
+  background: #fff;
+  color: #111;
+}
+.cancel-other {
+  position: relative;
+  margin-top: 22rpx;
+  padding: 20rpx 20rpx 46rpx;
+  border-radius: 18rpx;
+  background: rgba(255,255,255,.07);
+}
+.cancel-textarea {
+  width: 100%;
+  min-height: 150rpx;
+  color: #fff;
+  font-size: 27rpx;
+  line-height: 1.5;
+}
+.cancel-placeholder { color: rgba(255,255,255,.35); }
+.cancel-counter {
+  position: absolute;
+  right: 20rpx;
+  bottom: 16rpx;
+  color: rgba(255,255,255,.4);
+  font-size: 23rpx;
+}
+.cancel-submit {
+  height: 92rpx;
+  margin-top: 30rpx;
+  border-radius: 24rpx;
+  background: #ee4d4d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 31rpx;
+  font-weight: 900;
+}
+.cancel-submit.is-disabled { opacity: .55; }
 
 .outer2-review-wrap{
   display: flex;

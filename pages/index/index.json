@@ -8,6 +8,7 @@
     "pending-review": "/components/pending-review/index",
     "favorite-activities": "/components/favorite-activities/index",
     "history-activities": "/components/history-activities/index",
+    "my-activities": "/components/my-activities/index",
     "notification-center": "/components/notification-center/index",
     "review-rate": "/components/review-rate/rate",
     "search": "/components/search/search",
