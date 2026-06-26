@@ -10,10 +10,19 @@ const {
   updateActivityFavorite,
   cancelActivityRegistration
 } = require("../../api/activity");
-const { fetchReviewTasks } = require("../../api/review");
+const { fetchReviewTasks, submitBatchGood } = require("../../api/review");
 const { fetchNotificationUnreadCount } = require("../../api/notification");
 
+const BADGE_REFRESH_INTERVAL = 30000;
+
 Component({
+  properties: {
+    accountDisabled: {
+      type: Boolean,
+      value: false
+    }
+  },
+
   data: {
     rowH: "160rpx",
     halfRowH: "80rpx",
@@ -26,12 +35,11 @@ Component({
       avatarUrl: "https://dummyimage.com/300x300/ffffff/111111.png&text=Avatar",
       name: "MeetFun User",
       userId: "",
-      motto: "来吧，让我认识更多有趣的人",
-      tags: [],
+      motto: "你好呀，准备好出去转转了么~",
+      tags: ["未添加标签"],
       stats: {
         myEvents: 0,
-        ongoing: 0,
-        likes: 0
+        ongoing: 0
       }
     },
     profileLoading: false,
@@ -62,8 +70,11 @@ Component({
     outer2Posts: [],
 
     reviewEventPosts: [],
-    reviewMemberPosts: []
-    ,
+    reviewMemberPosts: [],
+    hasBatchGoodMembers: false,
+    showBatchGood: false,
+    batchGoodCandidates: [],
+    batchGoodSubmitting: false,
     showCancelRegistration: false,
     cancelActivityId: null,
     cancelActivityTitle: "",
@@ -130,7 +141,7 @@ Component({
       if (this._badgeRefreshTimer) return;
       this._badgeRefreshTimer = setInterval(() => {
         this.refreshBadges();
-      }, 10000);
+      }, BADGE_REFRESH_INTERVAL);
     },
 
     stopBadgeRefresh() {
@@ -161,7 +172,10 @@ Component({
 
       fetchUserProfile()
         .then((profile) => {
+          const loginUser = wx.getStorageSync("loginUser") || {};
+          wx.setStorageSync("loginUser", { ...loginUser, status: profile.status });
           this.setData({ profile });
+          this.triggerEvent("accountstatus", { status: profile.status });
         })
         .catch((err) => {
           console.error("[profile load failed]", err);
@@ -215,6 +229,14 @@ Component({
     },
 
     loadReviewTasks(mode) {
+      if (this.properties.accountDisabled) {
+        this.setData({
+          reviewEventPosts: [],
+          reviewMemberPosts: [],
+          hasBatchGoodMembers: false
+        });
+        return;
+      }
       if (this.data.reviewTasksLoading) return;
 
       const requestMode = mode || "";
@@ -230,6 +252,9 @@ Component({
           }
           if (!requestMode || requestMode === "member") {
             nextData.reviewMemberPosts = tasks.filter((item) => item.mode === "member");
+            nextData.hasBatchGoodMembers = nextData.reviewMemberPosts.some(
+              (item) => item.canBatchGood
+            );
           }
 
           this.setData(nextData);
@@ -242,6 +267,7 @@ Component({
           }
           if (!requestMode || requestMode === "member") {
             nextData.reviewMemberPosts = [];
+            nextData.hasBatchGoodMembers = false;
           }
           this.setData(nextData);
         })
@@ -284,16 +310,107 @@ Component({
     },
 
     onTapFeedback() {
+      if (this.properties.accountDisabled) {
+        wx.showToast({ title: "账号禁用期间请使用“我要申诉”", icon: "none" });
+        return;
+      }
       this.setData({ showMoreMenu: false });
       this.triggerEvent("openfeedback");
+    },
+
+    onTapAppeal() {
+      this.setData({ showMoreMenu: false });
+      this.triggerEvent("openappeal");
+    },
+
+    onCopyDouyin() {
+      wx.setClipboardData({
+        data: "73322649505",
+        success: () => wx.showToast({ title: "抖音号已复制", icon: "none" })
+      });
     },
 
     onTapNotifications() {
       this.triggerEvent("opennotifications");
     },
 
+    onBatchGoodMembers() {
+      const tasks = (this.data.reviewMemberPosts || []).filter((item) => item.canBatchGood);
+      if (!tasks.length) return;
+      this.setData({
+        showBatchGood: true,
+        batchGoodCandidates: tasks.map((item) => ({ ...item, selected: true }))
+      });
+    },
+
+    onToggleBatchGood(e) {
+      const index = Number(e.currentTarget.dataset.index);
+      this.setData({
+        [`batchGoodCandidates[${index}].selected`]:
+          !this.data.batchGoodCandidates[index].selected
+      });
+    },
+
+    onCloseBatchGood() {
+      if (!this.data.batchGoodSubmitting) this.setData({ showBatchGood: false });
+    },
+
+    async onConfirmBatchGood() {
+      const selected = (this.data.batchGoodCandidates || []).filter((item) => item.selected);
+      if (!selected.length) {
+        wx.showToast({ title: "请至少选择一位参与者", icon: "none" });
+        return;
+      }
+      const groups = selected.reduce((map, item) => {
+        const key = String(item.activityId);
+        if (!map[key]) map[key] = [];
+        map[key].push(item.targetId);
+        return map;
+      }, {});
+      this.setData({ batchGoodSubmitting: true });
+      const submittedTaskKeys = [];
+      let skippedCount = 0;
+      try {
+        for (const activityId of Object.keys(groups)) {
+          const result = await submitBatchGood(Number(activityId), groups[activityId]);
+          ((result && result.submittedTargetIds) || []).forEach((targetId) => {
+            submittedTaskKeys.push(`${activityId}:${targetId}`);
+          });
+          skippedCount += Object.keys((result && result.skippedTargets) || {}).length;
+        }
+        const submittedSet = submittedTaskKeys.reduce((map, key) => {
+          map[key] = true;
+          return map;
+        }, {});
+        const remaining = (this.data.reviewMemberPosts || []).filter(
+          (item) => !submittedSet[`${item.activityId}:${item.targetId}`]
+        );
+        this.setData({
+          reviewMemberPosts: remaining,
+          hasBatchGoodMembers: remaining.some((item) => item.canBatchGood),
+          showBatchGood: false
+        });
+        wx.showToast({
+          title: skippedCount
+            ? `成功${submittedTaskKeys.length}人，跳过${skippedCount}人`
+            : `已好评${submittedTaskKeys.length}人`,
+          icon: "none"
+        });
+      } catch (error) {
+        wx.showToast({ title: error.message || "提交失败", icon: "none" });
+      } finally {
+        this.setData({ batchGoodSubmitting: false });
+      }
+    },
+
     onEditProfile() {
-      const tags = (this.data.profile.tags || []).slice(0, 3);
+      if (this.properties.accountDisabled) {
+        wx.showToast({ title: "账号已禁用，暂时不能编辑资料", icon: "none" });
+        return;
+      }
+      const tags = (this.data.profile.tags || [])
+        .filter((tag) => tag !== "未添加标签")
+        .slice(0, 3);
       while (tags.length < 3) tags.push("");
 
       this.setData({
@@ -576,6 +693,10 @@ Component({
     },
 
     onTapPendingReview() {
+      if (this.properties.accountDisabled) {
+        wx.showToast({ title: "账号已禁用，暂时不能审核报名", icon: "none" });
+        return;
+      }
       this.triggerEvent("openpendingreview");
     },
 
@@ -664,6 +785,12 @@ Component({
             if (itemId && item._id === itemId) return false;
             return !(String(item.activityId) === String(activityId) && String(item.targetId) === String(targetId));
           })
+          ,hasBatchGoodMembers: this.data.reviewMemberPosts.filter((item) => {
+            return !(
+              Number(item.activityId) === Number(detail.activityId)
+              && Number(item.targetId) === Number(detail.targetId)
+            );
+          }).some((item) => item.canBatchGood)
         });
         return;
       }

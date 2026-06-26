@@ -42,6 +42,11 @@ function enrichReview(item) {
     applicationPreview: preview,
     fullApplicationText: applicationText || "未填写报名申请",
     overallRatingText: `${overallRating.toFixed(1)}/5`,
+    punctualRatingText: item.punctualRating == null ? "暂无" : `${Number(item.punctualRating).toFixed(1)}/5`,
+    communicationRatingText: item.communicationRating == null ? "暂无" : `${Number(item.communicationRating).toFixed(1)}/5`,
+    friendlyRatingText: item.friendlyRating == null ? "暂无" : `${Number(item.friendlyRating).toFixed(1)}/5`,
+    hasRealRating: ratings.length > 0,
+    reviewCount: Number(item.reviewCount) || 0,
     appliedText: formatAppliedText(item.appliedAt)
   };
 }

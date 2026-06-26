@@ -5,6 +5,7 @@ Page({
   data: {
     isLoggedIn: false,
     loginLoading: false,
+    accountDisabled: false,
     activeTab: "activity",
     showPendingReview: false,
     showFavorites: false,
@@ -19,6 +20,7 @@ Page({
     reviewRateTargetId: null,
     showSearch: false,
     showFeedback: false,
+    showAppeal: false,
     feedbackOverlayStyle: "",
     searchTranslateX: 0,
     searchTransition: "none",
@@ -45,8 +47,20 @@ Page({
     this._windowW = info.windowWidth || 375;
 
     const token = wx.getStorageSync("token");
+    const loginUser = wx.getStorageSync("loginUser") || {};
     if (token) {
-      this.setData({ isLoggedIn: true });
+      this.setData({
+        isLoggedIn: true,
+        accountDisabled: loginUser.status === "DISABLED"
+      });
+    }
+  },
+
+  onShow() {
+    if (!this.data.isLoggedIn) return;
+    const homeView = this.selectComponent("#homeView");
+    if (homeView && typeof homeView.loadProfile === "function") {
+      homeView.loadProfile();
     }
   },
 
@@ -84,6 +98,7 @@ Page({
 
             this.setData({
               isLoggedIn: true,
+              accountDisabled: user.status === "DISABLED",
               loginLoading: false,
               activeTab: "activity"
             });
@@ -129,6 +144,10 @@ Page({
 
   onTabPlus() {
     this.closeSearchImmediately();
+    if (this.data.accountDisabled) {
+      wx.showToast({ title: "账号已禁用，暂时不能创建活动", icon: "none" });
+      return;
+    }
     if (this.data.showCreatePost) return;
     this.onOpenCreatePost();
   },
@@ -148,6 +167,19 @@ Page({
         feedbackOverlayStyle: "transform: translateX(0px); transition: transform 260ms ease;"
       });
     }, 16);
+  },
+
+  onOpenAppeal() {
+    this.setData({ showAppeal: true });
+  },
+
+  onCloseAppeal() {
+    this.setData({ showAppeal: false });
+  },
+
+  onAccountStatusChange(event) {
+    const status = event && event.detail ? event.detail.status : "";
+    this.setData({ accountDisabled: status === "DISABLED" });
   },
 
   onCloseFeedback() {
@@ -325,7 +357,8 @@ Page({
       mode: detail.mode,
       activityId: detail.activityId,
       targetId: detail.targetId,
-      scores: detail.items || []
+      scores: detail.items || [],
+      reason: detail.reason || ""
     })
       .then(() => {
         const homeView = this.selectComponent("#homeView");
@@ -455,6 +488,21 @@ Page({
 
   onCreatePostUpdated() {
     wx.showToast({ title: "活动已修改", icon: "success" });
+    const activityView = this.selectComponent("#activityView");
+    if (activityView && typeof activityView.loadActivityPosts === "function") {
+      activityView.loadActivityPosts({
+        range: activityView.data && activityView.data.navValue,
+        refresh: true,
+        source: "updated"
+      });
+    }
+    const homeView = this.selectComponent("#homeView");
+    if (homeView && typeof homeView.loadMyOngoingActivities === "function") {
+      homeView.loadMyOngoingActivities();
+    }
+    if (homeView && typeof homeView.refreshBadges === "function") {
+      homeView.refreshBadges();
+    }
     this.onCreatePostClose();
   },
 

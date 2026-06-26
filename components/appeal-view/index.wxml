@@ -1,0 +1,45 @@
+<view class="appeal-root">
+  <view class="appeal-topbar">
+    <view class="appeal-back" bindtap="onBackTap">
+      <van-icon name="arrow-left" size="22px" color="#FFFFFF" />
+      <text>返回</text>
+    </view>
+    <view class="appeal-title">我要申诉</view>
+    <view></view>
+  </view>
+
+  <scroll-view class="appeal-scroll" scroll-y>
+    <view class="appeal-intro">
+      <view class="appeal-intro-title">账号禁用申诉</view>
+      <view class="appeal-intro-sub">你仍可浏览活动和查看通知。请说明你认为需要复核的原因，管理员处理后会通过通知告知结果。</view>
+    </view>
+
+    <view class="appeal-card">
+      <textarea
+        class="appeal-textarea"
+        value="{{content}}"
+        maxlength="1000"
+        placeholder="{{hasPending ? '已有申诉正在处理中' : '请填写完整的申诉说明'}}"
+        disabled="{{hasPending}}"
+        bindinput="onContentInput"
+      />
+      <view class="appeal-count">{{contentLength}}/1000</view>
+      <button
+        class="appeal-submit"
+        disabled="{{submitting || hasPending}}"
+        bindtap="onSubmit"
+      >{{hasPending ? '申诉处理中' : (submitting ? '提交中...' : '提交申诉')}}</button>
+    </view>
+
+    <view class="history-title">申诉记录</view>
+    <view wx:if="{{!loading && !appeals.length}}" class="appeal-empty">暂无申诉记录</view>
+    <view wx:for="{{appeals}}" wx:key="id" class="appeal-history">
+      <view class="appeal-history-head">
+        <text class="appeal-status appeal-status--{{item.status}}">{{item.statusText}}</text>
+        <text>{{item.createdText}}</text>
+      </view>
+      <view class="appeal-history-content">{{item.content}}</view>
+      <view wx:if="{{item.adminNote}}" class="appeal-note">处理说明：{{item.adminNote}}</view>
+    </view>
+  </scroll-view>
+</view>

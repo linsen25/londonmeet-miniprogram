@@ -38,10 +38,16 @@ function request(options) {
           return;
         }
 
+        const body = res.data || {};
+        const message = body.message || "Request failed";
+        if (status === 403 && message.includes("账号已被禁用")) {
+          const loginUser = wx.getStorageSync("loginUser") || {};
+          wx.setStorageSync("loginUser", { ...loginUser, status: "DISABLED" });
+        }
         reject({
           statusCode: status,
-          message: "Request failed",
-          response: res.data
+          message,
+          response: body
         });
       },
       fail(err) {

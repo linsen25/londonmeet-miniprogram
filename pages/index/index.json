@@ -13,6 +13,7 @@
     "review-rate": "/components/review-rate/rate",
     "search": "/components/search/search",
     "feedback-view": "/components/feedback-view/index",
+    "appeal-view": "/components/appeal-view/index",
     "van-icon": "@vant/weapp/icon/index"
   }
 }

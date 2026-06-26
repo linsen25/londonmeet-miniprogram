@@ -54,4 +54,30 @@
       bind:tap="onSubmit"
     />
   </view>
+
+  <van-popup
+    show="{{showLowReason}}"
+    round
+    position="bottom"
+    lock-scroll
+    custom-style="background: rgb(46,46,46);"
+    bind:close="onCloseLowReason"
+  >
+    <view class="low-reason-panel">
+      <view class="low-reason-title">请说明低分原因</view>
+      <view class="low-reason-sub">{{itemTitle}} · {{lowScoreText}}</view>
+      <textarea
+        class="low-reason-textarea"
+        value="{{lowReason}}"
+        maxlength="300"
+        placeholder="请具体说明本次低分原因，提交后将由管理员审核"
+        bindinput="onLowReasonInput"
+      />
+      <view class="low-reason-count">{{lowReasonLength}}/300</view>
+      <view class="low-reason-actions">
+        <button class="low-reason-btn low-reason-cancel" bindtap="onCloseLowReason">取消</button>
+        <button class="low-reason-btn low-reason-confirm" bindtap="onConfirmLowReason">确认并提交</button>
+      </view>
+    </view>
+  </van-popup>
 </view>

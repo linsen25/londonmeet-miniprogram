@@ -1,4 +1,10 @@
-const { fetchActivityPosts, updateActivityFavorite } = require("../../api/activity");
+const {
+  fetchActivityPosts,
+  recordActivityEvents,
+  updateActivityFavorite
+} = require("../../api/activity");
+
+const REALTIME_REFRESH_INTERVAL = 30000;
 
 Component({
   data: {
@@ -43,7 +49,7 @@ Component({
       if (this._realtimeTimer) return;
       this._realtimeTimer = setInterval(() => {
         this.refreshActivityPostsSilently();
-      }, 10000);
+      }, REALTIME_REFRESH_INTERVAL);
     },
 
     stopRealtimeRefresh() {
@@ -61,7 +67,9 @@ Component({
         pageSize: 20,
         refresh: true
       }).then((res) => {
-        this.setData({ posts: res.list || [] });
+        const posts = res.list || [];
+        this.setData({ posts });
+        this.recordExposures(posts);
       }).catch((err) => {
         console.error("[activity realtime refresh failed]", err);
       });
@@ -108,11 +116,13 @@ Component({
         pageSize: 20,
         refresh: !!refresh
       }).then((res) => {
+        const posts = res.list || [];
         this.setData({
-          posts: res.list || [],
+          posts,
           loading: false,
           refreshing: false
         });
+        this.recordExposures(posts);
       }).catch((err) => {
         console.error("[activity posts request failed]", source, targetRange, err);
         this.setData({
@@ -124,6 +134,14 @@ Component({
           title: "\u6d3b\u52a8\u52a0\u8f7d\u5931\u8d25",
           icon: "none"
         });
+      });
+    },
+
+    recordExposures(posts) {
+      const ids = (posts || []).map((item) => item._id || item.id).filter(Boolean);
+      if (!ids.length) return;
+      recordActivityEvents("EXPOSURE", ids).catch((err) => {
+        console.warn("[activity exposure analytics failed]", err);
       });
     },
 

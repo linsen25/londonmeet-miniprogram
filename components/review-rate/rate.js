@@ -84,8 +84,7 @@ const DEFAULT_ACTIVITY_ITEMS = [
 const DEFAULT_MEMBER_ITEMS = [
   { key: "punctual", label: "准时守约", value: 0, color: "#07C160" },
   { key: "communication", label: "沟通配合", value: 0, color: "#3B82F6" },
-  { key: "friendly", label: "友善礼貌", value: 0, color: "#A855F7" },
-  { key: "participation", label: "参与投入", value: 0, color: "#F59E0B" }
+  { key: "friendly", label: "友善礼貌", value: 0, color: "#A855F7" }
 ];
 
 Component({
@@ -119,7 +118,11 @@ Component({
       onInit: null
     },
     activityItems: cloneItems(DEFAULT_ACTIVITY_ITEMS),
-    memberItems: cloneItems(DEFAULT_MEMBER_ITEMS)
+    memberItems: cloneItems(DEFAULT_MEMBER_ITEMS),
+    showLowReason: false,
+    lowReason: "",
+    lowReasonLength: 0,
+    lowScoreText: ""
   },
 
   lifetimes: {
@@ -202,9 +205,23 @@ Component({
         return;
       }
 
+      const lowItems = items.filter((item) => Number(item.value) < 3);
+      if (lowItems.length) {
+        this.setData({
+          showLowReason: true,
+          lowReason: "",
+          lowReasonLength: 0,
+          lowScoreText: lowItems.map((item) => `${item.label} ${item.value}分`).join("、")
+        });
+        return;
+      }
+      this.emitSubmit("");
+    },
+
+    emitSubmit(reason) {
+      const items = this.getCurrentItems();
       const average = this.getAverage(items);
       const title = this.properties.itemTitle || "该项目";
-
       this.triggerEvent("submit", {
         mode: this.data.mode,
         title,
@@ -212,12 +229,31 @@ Component({
         activityId: this.properties.activityId,
         targetId: this.properties.targetId,
         average,
+        reason: reason || "",
         items: items.map((item) => ({
           key: item.key,
           label: item.label,
           value: Number(item.value || 0)
         }))
       });
+    },
+
+    onLowReasonInput(event) {
+      const lowReason = String(event.detail.value || "").slice(0, 300);
+      this.setData({ lowReason, lowReasonLength: lowReason.length });
+    },
+
+    onCloseLowReason() {
+      this.setData({ showLowReason: false });
+    },
+
+    onConfirmLowReason() {
+      const reason = this.data.lowReason.trim();
+      if (!reason) {
+        wx.showToast({ title: "请填写低分原因", icon: "none" });
+        return;
+      }
+      this.setData({ showLowReason: false }, () => this.emitSubmit(reason));
     }
   },
 

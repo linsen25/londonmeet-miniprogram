@@ -94,9 +94,6 @@ Component({
         searching: true
       });
 
-      // TODO(api): 这里请求搜索活动结果。
-      // 请求参数：keyword=输入框文字；tags=已选热点标签数组。
-      // 返回结果按活动瀑布流卡片字段渲染到 resultPosts。
       return searchActivities({
         keyword,
         tags,

@@ -395,6 +395,11 @@
               wx:if="{{outer2ReviewTabValue === 'member'}}"
               class="outer2-review-list"
             >
+              <button
+                wx:if="{{hasBatchGoodMembers}}"
+                class="batch-good-btn"
+                bindtap="onBatchGoodMembers"
+              >一键好评待评价参与者</button>
               <view wx:if="{{reviewTasksLoading}}" class="outer2-empty">加载中...</view>
               <view wx:elif="{{!reviewMemberPosts.length}}" class="outer2-empty">暂无待评价成员</view>
               <block wx:else>
@@ -442,6 +447,26 @@
 
         <view class="more-menu-list">
           <mf-template
+            wx:if="{{accountDisabled}}"
+            rows="1"
+            density="md"
+            align="left"
+            bg="rgb(46,46,46)"
+            radius="18rpx"
+            bind:rowtap="onTapAppeal"
+          >
+            <view slot="left" class="menu-entry-icon">
+              <van-icon name="warning-o" size="23px" color="#FF9500" />
+            </view>
+            <view class="mid">
+              <view class="t1">我要申诉</view>
+              <view class="t2">申请复核账号禁用决定</view>
+            </view>
+            <view slot="right" class="arrow">
+              <van-icon name="arrow" size="22px" color="#FFFFFF" />
+            </view>
+          </mf-template>
+          <mf-template
             rows="1"
             density="md"
             align="left"
@@ -465,6 +490,10 @@
         <view class="more-menu-contact">
           <text>联系我们</text>
           <text class="contact-email">liulinsen2517@gmail.com</text>
+          <view class="contact-douyin" bindtap="onCopyDouyin">
+            <text>抖音：73322649505</text>
+            <text class="contact-copy">点击复制</text>
+          </view>
         </view>
       </view>
     </view>
@@ -513,6 +542,37 @@
           class="cancel-submit {{cancelSubmitting ? 'is-disabled' : ''}}"
           bindtap="onSubmitCancelRegistration"
         >{{cancelSubmitting ? '提交中...' : '确认取消报名'}}</view>
+      </view>
+    </view>
+
+    <view wx:if="{{showBatchGood}}" class="batch-good-mask" bindtap="onCloseBatchGood">
+      <view class="batch-good-panel" catchtap="noop">
+        <view class="batch-good-title">一键好评参与者</view>
+        <view class="batch-good-tip">默认全选并给予三项5分；需要单独评价的人请取消勾选。</view>
+        <scroll-view class="batch-good-list" scroll-y>
+          <view
+            wx:for="{{batchGoodCandidates}}"
+            wx:key="_id"
+            class="batch-good-row"
+            data-index="{{index}}"
+            bindtap="onToggleBatchGood"
+          >
+            <image class="batch-good-avatar" src="{{item.avatarUrl}}" mode="aspectFill" />
+            <view class="batch-good-main">
+              <view>{{item.name}}</view>
+              <text>{{item.activityTitle}}</text>
+            </view>
+            <view class="batch-good-check {{item.selected ? 'is-selected' : ''}}">
+              {{item.selected ? '✓' : ''}}
+            </view>
+          </view>
+        </scroll-view>
+        <view class="batch-good-actions">
+          <button bindtap="onCloseBatchGood">取消</button>
+          <button class="is-confirm" bindtap="onConfirmBatchGood">
+            {{batchGoodSubmitting ? '提交中...' : '确认一键好评'}}
+          </button>
+        </view>
       </view>
     </view>
   </view>

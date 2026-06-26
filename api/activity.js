@@ -19,6 +19,7 @@ const ACTIVITY_ENDPOINTS = {
   cancelRegistration: "/v1/activities/:id/cancel-registration",
   favorite: "/v1/activities/:id/favorite",
   report: "/v1/activities/:id/report",
+  events: "/v1/activities/events",
   update: "/v1/activities/:id",
   updateQr: "/v1/activities/:id/invite-qr"
 };
@@ -137,6 +138,10 @@ function normalizeActivityDetail(raw) {
     authorUserId: detail.authorUserId,
     authorAvatarUrl: resolveAssetUrl(detail.authorAvatarUrl || ""),
     organizerRating: detail.organizerRating == null ? null : Number(detail.organizerRating),
+    authorMotto: detail.authorMotto || "你好呀，准备好出去转转了么~",
+    authorTags: Array.isArray(detail.authorTags) && detail.authorTags.filter(Boolean).length
+      ? detail.authorTags.filter(Boolean)
+      : ["未添加标签"],
     coverUrl,
     imageUrls: images.length ? images.map(resolveAssetUrl) : (coverUrl ? [coverUrl] : []),
     tags: Array.isArray(detail.tags) ? detail.tags.filter(Boolean) : [],
@@ -275,6 +280,16 @@ function reportActivity(id, reason) {
   });
 }
 
+function recordActivityEvents(eventType, activityIds) {
+  const ids = (activityIds || []).map(Number).filter(Boolean);
+  if (!ids.length) return Promise.resolve();
+  return request({
+    url: ACTIVITY_ENDPOINTS.events,
+    method: "POST",
+    data: { eventType, activityIds: ids }
+  });
+}
+
 module.exports = {
   ACTIVITY_ENDPOINTS,
   applyActivity,
@@ -291,6 +306,7 @@ module.exports = {
   joinActivityGroup,
   resolveAssetUrl,
   rejectActivityRegistration,
+  recordActivityEvents,
   reportActivity,
   updateActivityFavorite,
   updateActivity,

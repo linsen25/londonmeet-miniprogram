@@ -66,8 +66,24 @@
         <view class="detail-rating-list">
           <view class="detail-rating-row">
             <text>综合评分</text>
-            <text>{{selectedReview.overallRatingText}}</text>
+            <text>{{selectedReview.hasRealRating ? selectedReview.overallRatingText : '5.0/5 · 暂无真实评分'}}</text>
             <van-icon name="star" size="28rpx" color="#FFD60A" />
+          </view>
+          <view class="detail-rating-row">
+            <text>准时守约</text>
+            <text>{{selectedReview.punctualRatingText}}</text>
+          </view>
+          <view class="detail-rating-row">
+            <text>沟通配合</text>
+            <text>{{selectedReview.communicationRatingText}}</text>
+          </view>
+          <view class="detail-rating-row">
+            <text>友善礼貌</text>
+            <text>{{selectedReview.friendlyRatingText}}</text>
+          </view>
+          <view class="detail-rating-row">
+            <text>最近30天有效评价</text>
+            <text>{{selectedReview.reviewCount}} 人</text>
           </view>
         </view>
       </view>

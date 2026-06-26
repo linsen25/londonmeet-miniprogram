@@ -34,19 +34,22 @@
     <view class="tab-panel" wx:if="{{activeTab === 'home'}}">
       <home-view
         id="homeView"
+        account-disabled="{{accountDisabled}}"
         bind:openpost="onOpenPost"
         bind:openpendingreview="onOpenPendingReview"
         bind:openfavorites="onOpenFavorites"
         bind:openhistory="onOpenHistory"
         bind:openmyactivities="onOpenMyActivities"
         bind:openfeedback="onOpenFeedback"
+        bind:openappeal="onOpenAppeal"
+        bind:accountstatus="onAccountStatusChange"
         bind:openreviewrate="onOpenReviewRate"
         bind:opennotifications="onOpenNotifications"
         bind:favoritechange="onFavoriteStateChange"
       />
     </view>
 
-    <view wx:if="{{!showPost && !showPendingReview && !showFavorites && !showHistory && !showMyActivities && !showNotifications && !showReviewRate && !showCreatePost && !showSearch && !showFeedback}}" class="bottom-nav">
+    <view wx:if="{{!showPost && !showPendingReview && !showFavorites && !showHistory && !showMyActivities && !showNotifications && !showReviewRate && !showCreatePost && !showSearch && !showFeedback && !showAppeal}}" class="bottom-nav">
       <view
         class="bottom-nav__item {{activeTab === 'activity' ? 'is-active' : ''}}"
         bindtap="onTabActivity"
@@ -181,5 +184,12 @@
     style="{{feedbackOverlayStyle}}"
   >
     <feedback-view bind:close="onCloseFeedback" />
+  </view>
+
+  <view wx:if="{{showAppeal}}" class="feedback-overlay">
+    <appeal-view
+      bind:close="onCloseAppeal"
+      bind:statuschange="onAccountStatusChange"
+    />
   </view>
 </view>

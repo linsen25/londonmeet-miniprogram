@@ -2,12 +2,12 @@ const {
   applyActivity,
   fetchActivityDetail,
   joinActivityGroup,
+  recordActivityEvents,
   reportActivity
 } = require("../../api/activity");
 
 const FALLBACK_IMAGE = "https://dummyimage.com/600x400/ddd/333.png&text=IMG";
 const FALLBACK_AVATAR = "https://dummyimage.com/100x100/555555/ffffff.png&text=U";
-const FALLBACK_QR = "https://dummyimage.com/440x440/ddd/333.png&text=QR";
 
 function pad(value) {
   return String(value).padStart(2, "0");
@@ -76,8 +76,10 @@ Component({
     desc: "",
     authorName: "",
     authorAvatarUrl: "",
-    organizerRatingText: "暂无评分",
+    organizerRatingText: "5.0/5 · 暂无真实评分",
     hasOrganizerRating: false,
+    authorMotto: "你好呀，准备好出去转转了么~",
+    authorTags: ["未添加标签"],
     tags: [],
     address: "",
     joinedCount: 0,
@@ -109,7 +111,9 @@ Component({
     showGroupPopup: false,
     showImagePreview: false,
     previewIndex: 0,
-    groupQrUrl: FALLBACK_QR,
+    groupQrUrl: "",
+    qrExpiresAt: 0,
+    qrExpired: false,
     mapImgUrl: ""
   },
 
@@ -122,6 +126,9 @@ Component({
       fetchActivityDetail(id)
         .then((detail) => {
           this.applyDetail(detail);
+          recordActivityEvents("DETAIL_VIEW", [detail.id || id]).catch((err) => {
+            console.warn("[activity detail analytics failed]", err);
+          });
         })
         .catch((err) => {
           console.error("[activity detail request failed]", id, err);
@@ -151,9 +158,13 @@ Component({
         authorName: detail.authorName || "活动发起人",
         authorAvatarUrl: detail.authorAvatarUrl || FALLBACK_AVATAR,
         organizerRatingText: detail.organizerRating == null
-          ? "暂无评分"
-          : Number(detail.organizerRating).toFixed(1),
+          ? "5.0/5 · 暂无真实评分"
+          : `${Number(detail.organizerRating).toFixed(1)}/5`,
         hasOrganizerRating: detail.organizerRating != null,
+        authorMotto: detail.authorMotto || "你好呀，准备好出去转转了么~",
+        authorTags: Array.isArray(detail.authorTags) && detail.authorTags.length
+          ? detail.authorTags
+          : ["未添加标签"],
         tags: Array.isArray(detail.tags) ? detail.tags.filter(Boolean) : [],
         address: detail.locationText || "",
         joinedCount,
@@ -172,7 +183,10 @@ Component({
         isCreator: !!detail.isCreator,
         isFull: !!detail.full,
         isEnded: !!detail.ended,
-        groupQrUrl: detail.inviteQrUrl || FALLBACK_QR,
+        groupQrUrl: detail.inviteQrUrl || "",
+        qrExpiresAt: Number(detail.qrExpiresAt) || 0,
+        qrExpired: Number(detail.qrExpiresAt) > 0
+          && Number(detail.qrExpiresAt) <= Date.now(),
         mapImgUrl: detail.mapImageUrl || ""
       }, () => this.syncApplyState());
     },
@@ -182,14 +196,18 @@ Component({
       const isFull = this.data.isFull;
       const isEnded = this.data.isEnded;
       const isCreator = this.data.isCreator;
+      const loginUser = wx.getStorageSync("loginUser") || {};
+      const accountDisabled = loginUser.status === "DISABLED";
       let applyText = "报名";
       let applyDisabled = false;
       let applyBg = "#07C160";
 
-      if (isCreator) {
-        applyText = "我发起的活动";
+      if (accountDisabled) {
+        applyText = "账号已禁用";
         applyDisabled = true;
         applyBg = "#6B6B70";
+      } else if (isCreator) {
+        applyText = "加入群聊";
       } else if (isEnded) {
         applyText = "已结束";
         applyDisabled = true;
@@ -237,7 +255,7 @@ Component({
       if (this.data.applyDisabled || this.data.applying) return;
 
       const status = this.data.registrationStatus;
-      if (status === "approved" || status === "joined_group") {
+      if (this.data.isCreator || status === "approved" || status === "joined_group") {
         this.openGroupPopup();
         return;
       }
@@ -345,8 +363,14 @@ Component({
     openGroupPopup() {
       const id = this.data.postId;
       this.setData({ showGroupPopup: true });
+      const canUseQr = !!id && !!this.data.groupQrUrl && !this.data.qrExpired;
+      if (canUseQr && !this.data.isCreator) {
+        recordActivityEvents("QR_OPEN", [id]).catch((err) => {
+          console.warn("[activity qr analytics failed]", err);
+        });
+      }
 
-      if (!id || this.data.isCreator || this.data.registrationStatus === "joined_group") {
+      if (!canUseQr || this.data.isCreator || this.data.registrationStatus === "joined_group") {
         return;
       }
 

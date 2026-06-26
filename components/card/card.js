@@ -115,6 +115,11 @@ Component({
     },
 
     onFavoriteTap() {
+      const loginUser = wx.getStorageSync("loginUser") || {};
+      if (loginUser.status === "DISABLED") {
+        wx.showToast({ title: "账号已禁用，暂时不能收藏", icon: "none" });
+        return;
+      }
       const d = this.data.data || {};
       const id = d._id || d.id;
       const favorited = !this.data.innerFavorited;

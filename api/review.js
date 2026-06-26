@@ -3,7 +3,8 @@ const { resolveAssetUrl } = require("./activity");
 
 const REVIEW_ENDPOINTS = {
   tasks: "/v1/reviews/tasks",
-  submit: "/v1/reviews"
+  submit: "/v1/reviews",
+  batchGood: "/v1/reviews/batch-good"
 };
 
 function formatTime(value) {
@@ -37,8 +38,10 @@ function normalizeReviewTask(raw) {
     overallRating: Number(item.overallRating) || 0,
     timelinessRating: Number(item.timelinessRating) || 0,
     reviewCount: Number(item.reviewCount) || 0,
-    scoreText: item.reviewCount ? `综合评分：${Number(item.overallRating || 0).toFixed(1)}/5` : "综合评分：暂无",
-    speedText: item.reviewCount ? `准时守约：${Number(item.timelinessRating || 0).toFixed(1)}/5` : "准时守约：暂无"
+    canBatchGood: !!item.canBatchGood,
+    scoreText: item.reviewCount
+      ? `综合评分：${Number(item.overallRating || 0).toFixed(1)}/5`
+      : "综合评分：5.0/5 · 暂无真实评分"
   };
 }
 
@@ -60,7 +63,16 @@ function submitReview(payload) {
   });
 }
 
+function submitBatchGood(activityId, targetIds) {
+  return request({
+    url: REVIEW_ENDPOINTS.batchGood,
+    method: "POST",
+    data: { activityId, targetIds }
+  });
+}
+
 module.exports = {
   fetchReviewTasks,
-  submitReview
+  submitReview,
+  submitBatchGood
 };

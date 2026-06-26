@@ -27,6 +27,16 @@
           </view>
           <view wx:if="{{!isCreator}}" class="organizer-report" catchtap="onOpenReport">举报</view>
         </view>
+        <view class="organizer-profile">
+          <view class="organizer-motto">{{authorMotto}}</view>
+          <view class="organizer-tags">
+            <view
+              wx:for="{{authorTags}}"
+              wx:key="*this"
+              class="organizer-tag"
+            >{{item}}</view>
+          </view>
+        </view>
 
         <swiper
           class="post-swiper"
@@ -263,14 +273,25 @@
   <view class="popup-sub">请扫描二维码加入群聊，祝您活动愉快</view>
 
 
+    <view wx:if="{{!groupQrUrl}}" class="qr-empty">暂无群二维码，请联系活动发起人</view>
+    <view wx:elif="{{qrExpired}}" class="qr-expired-state">
+      <text class="qr-expired-state__title">二维码已过期</text>
+      <text class="qr-expired-state__desc">
+        {{isCreator ? '请前往“我的活动”上传新的群二维码' : '请联系活动发起人更新群二维码'}}
+      </text>
+    </view>
+    <view wx:else class="qr-state-wrap">
     <image
       class="qr-img"
       mode="aspectFit"
       src="{{groupQrUrl}}"
       bindtap="onPreviewGroupQr"
     />
+    </view>
 
 
-  <view class="popup-hint">若二维码过期，请联系发起人更新</view>
+  <view class="popup-hint">
+    {{qrExpired ? '过期二维码已停止展示和识别' : '长按或点击二维码可查看大图'}}
+  </view>
 </van-popup>
 </view>

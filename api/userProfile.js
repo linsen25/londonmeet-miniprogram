@@ -2,7 +2,8 @@ const { API_BASE_URL, request } = require("../utils/request");
 
 const API_ORIGIN = API_BASE_URL.replace(/\/api\/?$/, "");
 const FALLBACK_AVATAR = "https://dummyimage.com/300x300/ffffff/111111.png&text=Avatar";
-const DEFAULT_MOTTO = "\u6765\u5427\uff0c\u8ba9\u6211\u8ba4\u8bc6\u66f4\u591a\u6709\u8da3\u7684\u4eba";
+const DEFAULT_MOTTO = "你好呀，准备好出去转转了么~";
+const DEFAULT_TAG = "未添加标签";
 const MAX_COVER_MB = 8;
 const MAX_COVER_BYTES = MAX_COVER_MB * 1024 * 1024;
 const MAX_AVATAR_MB = 5;
@@ -27,11 +28,11 @@ function normalizeProfile(raw) {
     avatarUrl: resolveAssetUrl(profile.avatarUrl, FALLBACK_AVATAR),
     coverUrl: resolveAssetUrl(profile.coverUrl, ""),
     motto: profile.motto || DEFAULT_MOTTO,
-    tags,
+    tags: tags.length ? tags : [DEFAULT_TAG],
+    status: profile.status || "ACTIVE",
     stats: {
       myEvents: Number(stats.myEvents) || 0,
-      ongoing: Number(stats.ongoing) || 0,
-      likes: Number(stats.likes) || 0
+      ongoing: Number(stats.ongoing) || 0
     }
   };
 }
