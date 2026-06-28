@@ -490,10 +490,6 @@
         <view class="more-menu-contact">
           <text>联系我们</text>
           <text class="contact-email">liulinsen2517@gmail.com</text>
-          <view class="contact-douyin" bindtap="onCopyDouyin">
-            <text>抖音：73322649505</text>
-            <text class="contact-copy">点击复制</text>
-          </view>
         </view>
       </view>
     </view>

@@ -1,4 +1,4 @@
-const {
+﻿const {
   fetchUserProfile,
   updateUserProfile,
   uploadProfileAvatar,
@@ -324,13 +324,6 @@ Component({
       this.triggerEvent("openappeal");
     },
 
-    onCopyDouyin() {
-      wx.setClipboardData({
-        data: "73322649505",
-        success: () => wx.showToast({ title: "抖音号已复制", icon: "none" })
-      });
-    },
-
     onTapNotifications() {
       this.triggerEvent("opennotifications");
     },
@@ -442,7 +435,7 @@ Component({
       if (!avatarUrl) return;
 
       this.setData({ editProfileSaving: true });
-      wx.showLoading({ title: "上传中...", mask: true });
+      wx.showLoading({ title: "涓婁紶涓?..", mask: true });
 
       uploadProfileAvatar(avatarUrl)
         .then((uploadedUrl) => {
@@ -456,7 +449,7 @@ Component({
         })
         .catch((err) => {
           wx.showToast({
-            title: err.message || "头像上传失败",
+            title: err.message || "澶村儚涓婁紶澶辫触",
             icon: "none"
           });
         })
@@ -487,7 +480,7 @@ Component({
           if (!filePath) return;
 
           this.setData({ editProfileSaving: true });
-          wx.showLoading({ title: "上传中...", mask: true });
+          wx.showLoading({ title: "涓婁紶涓?..", mask: true });
 
           uploadProfileCover(filePath)
             .then((coverUrl) => {
@@ -500,7 +493,7 @@ Component({
             })
             .catch((err) => {
               wx.showToast({
-                title: err.message || "上传失败",
+                title: err.message || "涓婁紶澶辫触",
                 icon: "none"
               });
             })
@@ -661,7 +654,7 @@ Component({
               this.loadProfile();
             })
             .catch((err) => {
-              wx.showToast({ title: err.message || "取消报名失败", icon: "none" });
+              wx.showToast({ title: err.message || "鍙栨秷鎶ュ悕澶辫触", icon: "none" });
             })
             .finally(() => this.setData({ cancelSubmitting: false }));
         }
@@ -689,13 +682,13 @@ Component({
         console.error("[home favorite request failed]", id, err);
         this.setData({ outer2Posts: previousPosts });
         this.triggerEvent("favoritechange", { id, favorited: !detail.favorited });
-        wx.showToast({ title: "收藏同步失败", icon: "none" });
+        wx.showToast({ title: "鏀惰棌鍚屾澶辫触", icon: "none" });
       });
     },
 
     onTapPendingReview() {
       if (this.properties.accountDisabled) {
-        wx.showToast({ title: "账号已禁用，暂时不能审核报名", icon: "none" });
+        wx.showToast({ title: "璐﹀彿宸茬鐢紝鏆傛椂涓嶈兘瀹℃牳鎶ュ悕", icon: "none" });
         return;
       }
       this.triggerEvent("openpendingreview");

@@ -30,11 +30,11 @@ function formatNotificationTime(value) {
 function normalizeNotification(raw) {
   const item = raw || {};
   const type = item.type || "";
-  const relatedType = item.relatedType || "";
+  const relatedType = String(item.relatedType || "").toLowerCase();
   const relatedId = item.relatedId;
   const hasRelated = !!(
     relatedType === "pending_review" ||
-    (relatedType === "activity" && relatedId) ||
+    relatedId ||
     type === "review_available" ||
     type === "review_reminder"
   );

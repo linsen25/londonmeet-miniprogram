@@ -330,6 +330,11 @@ Page({
 
       if (relatedType === "activity" && relatedId) {
         this.onOpenPost({ detail: { id: relatedId } });
+        return;
+      }
+
+      if (relatedId) {
+        this.onOpenPost({ detail: { id: relatedId } });
       }
     });
   },

@@ -34,11 +34,15 @@ function normalizeProfile(raw) {
   const tags = Array.isArray(profile.tags) ? profile.tags.filter(Boolean) : [];
   const publicId = normalizePublicId(profile.publicId || profile.userId);
   const displayUserId = String(profile.displayId || "").trim() || formatDisplayId(publicId);
+  const nickname = String(profile.nickname || "").trim();
+  const displayName = /^用户\d{5}$/.test(nickname) && displayUserId
+    ? `用户${displayUserId}`
+    : (nickname || "MeetFun User");
 
   return {
     userId: displayUserId,
     displayUserId,
-    name: profile.nickname || "MeetFun User",
+    name: displayName,
     avatarUrl: resolveAssetUrl(profile.avatarUrl, FALLBACK_AVATAR),
     coverUrl: resolveAssetUrl(profile.coverUrl, ""),
     motto: profile.motto || DEFAULT_MOTTO,
