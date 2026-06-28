@@ -20,7 +20,7 @@
     <view class="score-bars">
       <view wx:for="{{scoreSummary}}" wx:key="key" class="score-bar-row">
         <view class="score-bar-head">
-          <text class="score-bar-label">{{item.label}}</text>
+          <text class="score-bar-label">{{item.displayLabel}}</text>
           <text class="score-bar-value">{{item.value || 0}} / 5</text>
         </view>
         <view class="score-track">
@@ -37,7 +37,7 @@
       class="rate-row"
     >
       <view class="rate-row-head">
-        <text class="rate-label">{{item.label}}</text>
+        <text class="rate-label">{{item.displayLabel}}</text>
         <text class="rate-value">{{item.value > 0 ? item.value : '未评分'}}</text>
       </view>
 

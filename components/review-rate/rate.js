@@ -2,18 +2,32 @@ function cloneItems(items) {
   return items.map((item) => ({ ...item }));
 }
 
+const SCORE_LABELS = {
+  organization: "组织安排",
+  experience: "活动体验",
+  atmosphere: "现场氛围",
+  match: "内容匹配",
+  punctual: "准时守约",
+  communication: "沟通配合",
+  friendly: "友善礼貌"
+};
+
 const DEFAULT_ACTIVITY_ITEMS = [
-  { key: "organization", label: "组织安排", value: 0, color: "#07C160" },
-  { key: "experience", label: "活动体验", value: 0, color: "#3B82F6" },
-  { key: "atmosphere", label: "现场氛围", value: 0, color: "#A855F7" },
-  { key: "match", label: "内容匹配", value: 0, color: "#F59E0B" }
+  { key: "organization", label: "organization", displayLabel: SCORE_LABELS.organization, value: 0, color: "#07C160" },
+  { key: "experience", label: "experience", displayLabel: SCORE_LABELS.experience, value: 0, color: "#3B82F6" },
+  { key: "atmosphere", label: "atmosphere", displayLabel: SCORE_LABELS.atmosphere, value: 0, color: "#A855F7" },
+  { key: "match", label: "match", displayLabel: SCORE_LABELS.match, value: 0, color: "#F59E0B" }
 ];
 
 const DEFAULT_MEMBER_ITEMS = [
-  { key: "punctual", label: "准时守约", value: 0, color: "#07C160" },
-  { key: "communication", label: "沟通配合", value: 0, color: "#3B82F6" },
-  { key: "friendly", label: "友善礼貌", value: 0, color: "#A855F7" }
+  { key: "punctual", label: "punctual", displayLabel: SCORE_LABELS.punctual, value: 0, color: "#07C160" },
+  { key: "communication", label: "communication", displayLabel: SCORE_LABELS.communication, value: 0, color: "#3B82F6" },
+  { key: "friendly", label: "friendly", displayLabel: SCORE_LABELS.friendly, value: 0, color: "#A855F7" }
 ];
+
+function displayLabel(item) {
+  return SCORE_LABELS[item.key] || item.label || item.key;
+}
 
 Component({
   properties: {
@@ -78,6 +92,7 @@ Component({
         averageText: `${average.toFixed(1)} / 5`,
         scoreSummary: items.map((item) => ({
           ...item,
+          displayLabel: displayLabel(item),
           width: `${Math.max(0, Math.min(100, (Number(item.value || 0) / 5) * 100))}%`
         }))
       });
@@ -126,7 +141,7 @@ Component({
           showLowReason: true,
           lowReason: "",
           lowReasonLength: 0,
-          lowScoreText: lowItems.map((item) => `${item.label} ${item.value}`).join(", ")
+          lowScoreText: lowItems.map((item) => `${displayLabel(item)} ${item.value}`).join(", ")
         });
         return;
       }
@@ -147,7 +162,7 @@ Component({
         reason: reason || "",
         items: items.map((item) => ({
           key: item.key,
-          label: item.label,
+          label: item.key,
           value: Number(item.value || 0)
         }))
       });
