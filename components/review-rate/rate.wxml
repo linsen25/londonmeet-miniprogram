@@ -14,8 +14,20 @@
     <view class="rate-item-title">{{itemTitle}}</view>
   </view>
 
-  <view class="rate-shell rate-shell--chart">
-    <ec-canvas id="rateChart" canvas-id="rateChart" ec="{{ec}}" />
+  <view class="rate-shell rate-shell--summary">
+    <view class="score-total">{{averageText}}</view>
+    <view class="score-caption">平均评分</view>
+    <view class="score-bars">
+      <view wx:for="{{scoreSummary}}" wx:key="key" class="score-bar-row">
+        <view class="score-bar-head">
+          <text class="score-bar-label">{{item.label}}</text>
+          <text class="score-bar-value">{{item.value || 0}} / 5</text>
+        </view>
+        <view class="score-track">
+          <view class="score-fill" style="width: {{item.width}}; background: {{item.color}};"></view>
+        </view>
+      </view>
+    </view>
   </view>
 
   <view class="rate-shell rate-shell--form">
@@ -64,19 +76,19 @@
     bind:close="onCloseLowReason"
   >
     <view class="low-reason-panel">
-      <view class="low-reason-title">请说明低分原因</view>
-      <view class="low-reason-sub">{{itemTitle}} · {{lowScoreText}}</view>
+      <view class="low-reason-title">请填写原因</view>
+      <view class="low-reason-sub">{{itemTitle}} - {{lowScoreText}}</view>
       <textarea
         class="low-reason-textarea"
         value="{{lowReason}}"
         maxlength="300"
-        placeholder="请具体说明本次低分原因，提交后将由管理员审核"
+        placeholder="请说明低分原因。"
         bindinput="onLowReasonInput"
       />
       <view class="low-reason-count">{{lowReasonLength}}/300</view>
       <view class="low-reason-actions">
         <button class="low-reason-btn low-reason-cancel" bindtap="onCloseLowReason">取消</button>
-        <button class="low-reason-btn low-reason-confirm" bindtap="onConfirmLowReason">确认并提交</button>
+        <button class="low-reason-btn low-reason-confirm" bindtap="onConfirmLowReason">确认</button>
       </view>
     </view>
   </van-popup>

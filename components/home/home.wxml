@@ -48,7 +48,7 @@
               <view class="profile-top-right">
                 <view class="profile-name">{{profile.name}}</view>
                 <view class="profile-id-row">
-                  <text class="profile-id">个人 ID：{{profile.userId}}</text>
+                  <text class="profile-id">个人 ID：{{profile.displayUserId || profile.userId}}</text>
                 </view>
               </view>
             </view>
@@ -399,7 +399,7 @@
                 wx:if="{{hasBatchGoodMembers}}"
                 class="batch-good-btn"
                 bindtap="onBatchGoodMembers"
-              >一键好评待评价参与者</button>
+              >一键好评</button>
               <view wx:if="{{reviewTasksLoading}}" class="outer2-empty">加载中...</view>
               <view wx:elif="{{!reviewMemberPosts.length}}" class="outer2-empty">暂无待评价成员</view>
               <block wx:else>
@@ -547,7 +547,7 @@
 
     <view wx:if="{{showBatchGood}}" class="batch-good-mask" bindtap="onCloseBatchGood">
       <view class="batch-good-panel" catchtap="noop">
-        <view class="batch-good-title">一键好评参与者</view>
+        <view class="batch-good-title">一键好评</view>
         <view class="batch-good-tip">默认全选并给予三项5分；需要单独评价的人请取消勾选。</view>
         <scroll-view class="batch-good-list" scroll-y>
           <view

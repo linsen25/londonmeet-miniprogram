@@ -32,9 +32,10 @@ Component({
 
     profile: {
       coverUrl: "",
-      avatarUrl: "https://dummyimage.com/300x300/ffffff/111111.png&text=Avatar",
+      avatarUrl: "https://res.cloudinary.com/ddkqatprj/image/upload/v1782629106/londonmeet/defaultUser.png",
       name: "MeetFun User",
       userId: "",
+      displayUserId: "",
       motto: "你好呀，准备好出去转转了么~",
       tags: ["未添加标签"],
       stats: {

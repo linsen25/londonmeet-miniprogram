@@ -1,7 +1,7 @@
 const { API_BASE_URL, request } = require("../utils/request");
 
 const API_ORIGIN = API_BASE_URL.replace(/\/api\/?$/, "");
-const FALLBACK_AVATAR = "https://dummyimage.com/300x300/ffffff/111111.png&text=Avatar";
+const FALLBACK_AVATAR = "https://res.cloudinary.com/ddkqatprj/image/upload/v1782629106/londonmeet/defaultUser.png";
 const DEFAULT_MOTTO = "你好呀，准备好出去转转了么~";
 const DEFAULT_TAG = "未添加标签";
 const MAX_COVER_MB = 8;
@@ -9,8 +9,19 @@ const MAX_COVER_BYTES = MAX_COVER_MB * 1024 * 1024;
 const MAX_AVATAR_MB = 5;
 const MAX_AVATAR_BYTES = MAX_AVATAR_MB * 1024 * 1024;
 
+function normalizePublicId(value) {
+  return String(value || "").replace(/^usr_/, "");
+}
+
+function formatDisplayId(value) {
+  const id = normalizePublicId(value);
+  if (id.length <= 16) return id;
+  return `${id.slice(0, 8)}...${id.slice(-8)}`;
+}
+
 function resolveAssetUrl(url, fallback) {
   if (!url) return fallback;
+  if (/^https:\/\/dummyimage\.com\/300x300\//i.test(url)) return FALLBACK_AVATAR;
   if (/^https?:\/\//i.test(url)) return url;
   if (url.indexOf("/uploads/avatar/default-avatar") === 0) return FALLBACK_AVATAR;
   if (url.charAt(0) === "/") return `${API_ORIGIN}${url}`;
@@ -21,9 +32,12 @@ function normalizeProfile(raw) {
   const profile = raw || {};
   const stats = profile.stats || {};
   const tags = Array.isArray(profile.tags) ? profile.tags.filter(Boolean) : [];
+  const publicId = normalizePublicId(profile.publicId || profile.userId);
+  const displayUserId = String(profile.displayId || "").trim() || formatDisplayId(publicId);
 
   return {
-    userId: profile.userId,
+    userId: displayUserId,
+    displayUserId,
     name: profile.nickname || "MeetFun User",
     avatarUrl: resolveAssetUrl(profile.avatarUrl, FALLBACK_AVATAR),
     coverUrl: resolveAssetUrl(profile.coverUrl, ""),

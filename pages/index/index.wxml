@@ -1,24 +1,11 @@
 <view class="viewport">
-  <view wx:if="{{!isLoggedIn}}" class="login-screen">
+  <view wx:if="{{!isLoggedIn}}" class="login-screen" bindtap="onRetrySilentLogin">
     <view class="login-hero">
       <image class="login-logo" src="/assets/logo.png" mode="aspectFill" />
-      <text class="login-subtitle">测试版</text>
+      <text class="login-edition">测试版</text>
+      <view class="login-spinner"></view>
+      <text class="login-subtitle">{{loginMessage}}</text>
     </view>
-
-    <mf-button
-      class="login-section"
-      bg="#07C160"
-      color="#FFFFFF"
-      height="72rpx"
-      radius="36rpx"
-      fontSize="28rpx"
-      block="{{false}}"
-      width="320rpx"
-      loading="{{loginLoading}}"
-      disabled="{{loginLoading}}"
-      text="{{loginLoading ? '登录中...' : '微信登录'}}"
-      bindtap="onLogin"
-    />
   </view>
 
   <view wx:else class="main-screen">

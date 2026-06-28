@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://127.0.0.1:8080/api";
+const API_BASE_URL = "https://londonmeet-backend.onrender.com/api";
 
 function request(options) {
   const { url, method = "GET", data = {}, header = {} } = options || {};

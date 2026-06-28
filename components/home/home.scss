@@ -539,11 +539,11 @@
 }
 
 .batch-good-btn::after { border: 0; }
-.batch-good-mask { position: fixed; inset: 0; z-index: 2000; display: flex; align-items: flex-end; background: rgba(0,0,0,.65); }
-.batch-good-panel { width: 100%; max-height: 76vh; padding: 30rpx 24rpx calc(26rpx + env(safe-area-inset-bottom)); box-sizing: border-box; border-radius: 30rpx 30rpx 0 0; background: rgb(46,46,46); }
+.batch-good-mask { position: fixed; inset: 0; z-index: 10000; display: flex; align-items: flex-end; background: rgba(0,0,0,.65); }
+.batch-good-panel { width: 100%; height: 75vh; padding: 30rpx 24rpx calc(168rpx + env(safe-area-inset-bottom)); box-sizing: border-box; border-radius: 30rpx 30rpx 0 0; background: rgb(46,46,46); }
 .batch-good-title { text-align: center; color: #fff; font-size: 34rpx; font-weight: 900; }
 .batch-good-tip { margin-top: 10rpx; color: rgba(255,255,255,.58); font-size: 24rpx; line-height: 1.5; }
-.batch-good-list { max-height: 46vh; margin-top: 20rpx; }
+.batch-good-list { height: calc(75vh - 300rpx - env(safe-area-inset-bottom)); margin-top: 20rpx; }
 .batch-good-row { display: flex; align-items: center; gap: 16rpx; padding: 16rpx 0; border-bottom: 1rpx solid rgba(255,255,255,.08); }
 .batch-good-avatar { width: 70rpx; height: 70rpx; border-radius: 50%; }
 .batch-good-main { flex: 1; color: #fff; font-size: 27rpx; }

@@ -5,6 +5,7 @@ Page({
   data: {
     isLoggedIn: false,
     loginLoading: false,
+    loginMessage: "正在准备活动...",
     accountDisabled: false,
     activeTab: "activity",
     showPendingReview: false,
@@ -53,7 +54,9 @@ Page({
         isLoggedIn: true,
         accountDisabled: loginUser.status === "DISABLED"
       });
+      return;
     }
+    this.startSilentLogin();
   },
 
   onShow() {
@@ -64,28 +67,25 @@ Page({
     }
   },
 
-  onLogin() {
+  startSilentLogin() {
     if (this.data.loginLoading) return;
-
-    this.setData({ loginLoading: true });
-    wx.showLoading({
-      title: "登录中...",
-      mask: true
+    this.setData({
+      loginLoading: true,
+      loginMessage: "正在准备活动..."
     });
 
     wx.login({
       success: (loginRes) => {
         const code = loginRes && loginRes.code;
         if (!code) {
-          wx.hideLoading();
-          wx.showToast({
-            title: "微信登录失败",
-            icon: "none"
+          this.setData({
+            loginLoading: false,
+            loginMessage: "微信登录失败，点这里重试"
           });
-          this.setData({ loginLoading: false });
           return;
         }
 
+        this.setData({ loginMessage: "正在进入活动页..." });
         wechatLogin({ code })
           .then((user) => {
             if (!user || !user.token) {
@@ -94,37 +94,43 @@ Page({
 
             wx.setStorageSync("token", user.token);
             wx.setStorageSync("loginUser", user);
-            wx.hideLoading();
-
             this.setData({
               isLoggedIn: true,
               accountDisabled: user.status === "DISABLED",
               loginLoading: false,
-              activeTab: "activity"
+              activeTab: "activity",
+              loginMessage: "正在准备活动..."
             });
           })
           .catch((err) => {
-            console.error("[wechat login failed]", err);
-            wx.hideLoading();
-            wx.showToast({
-              title: err.message || "登录失败",
-              icon: "none"
+            console.error("[silent login failed]", err);
+            this.setData({
+              loginLoading: false,
+              loginMessage: "进入失败，点这里重试"
             });
-            this.setData({ loginLoading: false });
           });
       },
       fail: (err) => {
         console.error("[wx.login failed]", err);
-        wx.hideLoading();
-        wx.showToast({
-          title: "微信登录失败",
-          icon: "none"
+        this.setData({
+          loginLoading: false,
+          loginMessage: "微信登录失败，点这里重试"
         });
-        this.setData({ loginLoading: false });
       }
     });
   },
 
+  onRetrySilentLogin() {
+    this.startSilentLogin();
+  },
+
+  onLogin() {
+    this.startSilentLogin();
+  },
+
+  onOfficialLogin() {
+    this.startSilentLogin();
+  },
   onActivitySearch() {
     if (this.data.showSearch) return;
     this.onOpenSearch();
