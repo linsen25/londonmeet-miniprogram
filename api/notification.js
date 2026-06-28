@@ -29,14 +29,24 @@ function formatNotificationTime(value) {
 
 function normalizeNotification(raw) {
   const item = raw || {};
+  const type = item.type || "";
+  const relatedType = item.relatedType || "";
+  const relatedId = item.relatedId;
+  const hasRelated = !!(
+    relatedType === "pending_review" ||
+    (relatedType === "activity" && relatedId) ||
+    type === "review_available" ||
+    type === "review_reminder"
+  );
 
   return {
     id: item.id,
-    type: item.type || "",
+    type,
     title: item.title || "",
     content: item.content || "",
-    relatedType: item.relatedType || "",
-    relatedId: item.relatedId,
+    relatedType,
+    relatedId,
+    hasRelated,
     read: !!item.read,
     createdAt: Number(item.createdAt) || 0,
     timeText: formatNotificationTime(item.createdAt)

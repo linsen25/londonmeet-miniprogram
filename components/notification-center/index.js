@@ -76,6 +76,7 @@ Component({
       if (!item) return;
 
       const afterRead = () => {
+        if (!item.hasRelated) return;
         this.triggerEvent("openrelated", {
           id: item.id,
           relatedType: item.relatedType,

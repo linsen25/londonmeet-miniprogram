@@ -28,7 +28,7 @@
             </view>
             <view class="notice-content">{{item.content}}</view>
           </view>
-          <van-icon name="arrow" size="20px" color="rgba(255,255,255,0.42)" />
+          <van-icon wx:if="{{item.hasRelated}}" name="arrow" size="20px" color="rgba(255,255,255,0.42)" />
         </view>
       </block>
     </scroll-view>
