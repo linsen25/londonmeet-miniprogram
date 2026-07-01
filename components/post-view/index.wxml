@@ -184,6 +184,14 @@
       </view>
 
       <!-- 閳?閴?閹躲儱鎮曢幐澶愭尦閿涙艾鎷版潻娑樺閺夆€虫倱鐎硅棄鎮撴竟绛圭礉娑撳秴顢戦妴浣风瑝鐞氼偅灏呴妴浣稿讲閻愮懓鍤?-->
+      <view wx:if="{{!isCreator && !isEnded}}" class="post-shell participant-rule-box">
+        <view class="participant-rule-title">温馨提示</view>
+        <view class="participant-rule-text">报名后需等待发起者审核，通过后才能查看微信群二维码。</view>
+        <view class="participant-rule-text">如无法参加，可在活动开始前至少3小时取消报名，并填写原因，发起者会收到通知。</view>
+        <view class="participant-rule-text">请注意线下安全，谨慎确认集合地点；私聊、加好友和后续沟通请在微信内完成。</view>
+        <view class="participant-rule-text">请勿恶意报名、骚扰他人或提交虚假信息，违规账号可能被限制或封禁。</view>
+      </view>
+
         <view class="post-actions {{isEnded && !isCreator ? 'has-report' : ''}}">
           <button
             wx:if="{{isEnded && !isCreator}}"

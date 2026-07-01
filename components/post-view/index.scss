@@ -566,6 +566,26 @@
   border: 0;
 }
 
+.participant-rule-box {
+  padding: 20rpx 22rpx;
+  border: 1rpx solid rgba(255,255,255,0.08);
+}
+
+.participant-rule-title {
+  color: rgba(255,255,255,0.92);
+  font-size: 27rpx;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.participant-rule-text {
+  margin-top: 10rpx;
+  color: rgba(255,255,255,0.62);
+  font-size: 23rpx;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
 .apply-btn .mf-btn.is-disabled {
   opacity: 1;
 }
