@@ -683,7 +683,8 @@ Component({
       if (!id) return;
       const item = (this.data.outer2Posts || []).find((post) => post._id === id || post.id === id);
       if (!item) return;
-      const canCancel = ["pending", "approved", "joined_group"].includes(item.registrationStatus);
+      const canCancel = ["pending", "approved", "joined_group"].includes(item.registrationStatus)
+        && Number(item.startAt) > Date.now() + 3 * 60 * 60 * 1000;
       const itemList = canCancel ? ["查看活动", "取消报名"] : ["查看活动"];
       wx.showActionSheet({
         itemList,

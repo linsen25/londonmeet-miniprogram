@@ -611,29 +611,6 @@
   text-overflow: ellipsis;
 }
 
-.apply-popup__notice {
-  margin-top: 18rpx;
-  padding: 16rpx 18rpx;
-  border-radius: 18rpx;
-  background: rgba(255,255,255,0.07);
-  border: 1rpx solid rgba(255,255,255,0.08);
-}
-
-.apply-popup__notice-title {
-  color: rgba(255,255,255,0.92);
-  font-size: 25rpx;
-  font-weight: 800;
-  line-height: 1.35;
-}
-
-.apply-popup__notice-text {
-  margin-top: 8rpx;
-  color: rgba(255,255,255,0.62);
-  font-size: 22rpx;
-  font-weight: 600;
-  line-height: 1.45;
-}
-
 .apply-popup__textarea{
   margin-top: 24rpx;
   width: 100%;

@@ -227,14 +227,14 @@
         <view wx:if="{{validationErrorKey === 'invite'}}" class="validation-message">{{validationErrorMessage}}</view>
       </view>
 
-      <view wx:if="{{mode !== 'edit'}}" class="activity-rule-box">
+      <view class="activity-rule-box">
         <view class="activity-rule-title">温馨提示</view>
-        <view class="activity-rule-text">创建后可在“主页 - 我的活动”中查看活动、修改内容、更换群二维码、下架活动，也可以进入“待审核报名”处理参与者申请。</view>
-        <view class="activity-rule-text">有人报名、取消报名、二维码提醒、活动下架等消息会发送到通知中心。请及时查看，避免错过审核和活动管理提醒。</view>
-        <view class="activity-rule-text">参与者报名后需等待发起者审核；通过后才能查看群二维码。参与者可在活动开始前至少3小时取消报名，并需填写原因。</view>
-        <view class="activity-rule-text">活动开始前可下架活动，下架时需填写原因，系统会通知已报名和收藏用户；活动开始后不可下架。</view>
-        <view class="activity-rule-text">请勿发布违法违规、敏感、广告营销、虚假、骚扰、诈骗或诱导付费等内容。违规活动可能被下架，账号可能被限制或封禁。</view>
-        <view class="activity-rule-text">请维护友好、安全、真实的线下活动环境。建议公开页面只展示大概区域，具体地点和后续沟通在微信群内统一说明。</view>
+        <view class="activity-rule-text">活动发布后，可在主页右上角“待审核”中查看每个活动的报名申请，并对报名者进行通过、拒绝或拉入黑名单处理。审核结果会通过通知发送给报名者。</view>
+        <view class="activity-rule-text">有人报名、取消报名、活动被举报或审核状态变化时，你会在主页右上角的通知入口收到提醒。</view>
+        <view class="activity-rule-text">如需管理自己发布的活动，可在“我的活动”中查看。活动开始前，如果还没有报名者，你可以下架活动；如果已有报名者，仍可选择下架，但需要填写原因，系统会通知已通过、审核中或收藏过该活动的用户。</view>
+        <view class="activity-rule-text">报名者通过审核后，会看到微信群二维码。请在微信群内统一发布具体集合地点、临时安排和后续沟通信息，公开活动地址只填写大概区域或公共地点，不要填写私人住址、宿舍房号等敏感地址。</view>
+        <view class="activity-rule-text">请勿发布违法违规、敏感、虚假、诱导付费、广告营销或可能危害线下安全的内容。违规活动可能被下架，严重违规账号可能被限制或封禁。</view>
+        <view class="activity-rule-text">本小程序仅免费发布线下活动和活动报名，不提供聊天、付费或广告业务；私聊、加好友和后续沟通请转至微信完成。</view>
       </view>
     </view>
 

@@ -184,12 +184,13 @@
       </view>
 
       <!-- 閳?閴?閹躲儱鎮曢幐澶愭尦閿涙艾鎷版潻娑樺閺夆€虫倱鐎硅棄鎮撴竟绛圭礉娑撳秴顢戦妴浣风瑝鐞氼偅灏呴妴浣稿讲閻愮懓鍤?-->
-      <view wx:if="{{!isCreator && !isEnded}}" class="post-shell participant-rule-box">
+      <view class="post-shell participant-rule-box">
         <view class="participant-rule-title">温馨提示</view>
-        <view class="participant-rule-text">报名后需等待发起者审核，通过后才能查看微信群二维码。</view>
-        <view class="participant-rule-text">如无法参加，可在活动开始前至少3小时取消报名，并填写原因，发起者会收到通知。</view>
-        <view class="participant-rule-text">请注意线下安全，谨慎确认集合地点；私聊、加好友和后续沟通请在微信内完成。</view>
-        <view class="participant-rule-text">请勿恶意报名、骚扰他人或提交虚假信息，违规账号可能被限制或封禁。</view>
+        <view class="participant-rule-text">报名提交后会进入发起者审核。审核通过、拒绝、活动下架或取消时，你会在主页右上角的通知入口收到消息提醒。</view>
+        <view class="participant-rule-text">审核通过后，可在活动详情页查看微信群二维码。进群后由发起者统一发布详细集合地点、临时安排和后续沟通信息。</view>
+        <view class="participant-rule-text">如临时无法参加，可在主页“待开始”中找到该活动，点击取消报名并填写原因。取消需在活动开始前至少3小时完成，取消后名额会自动释放，发起者会收到你的昵称、ID和取消原因通知。</view>
+        <view class="participant-rule-text">如遇到虚假活动、骚扰、违规内容或安全问题，可以在活动详情页点击举报，平台会根据规则处理。</view>
+        <view class="participant-rule-text">线下见面请注意安全，不要在公开页面填写或索要私密地址；私聊、加好友和后续沟通请在微信内完成，本小程序不提供聊天、付费或广告业务。</view>
       </view>
 
         <view class="post-actions {{isEnded && !isCreator ? 'has-report' : ''}}">
@@ -263,13 +264,6 @@
     <view class="apply-popup">
       <view class="apply-popup__title">报名申请</view>
       <view class="apply-popup__activity">{{title}}</view>
-      <view class="apply-popup__notice">
-        <view class="apply-popup__notice-title">报名前提示</view>
-        <view class="apply-popup__notice-text">提交后需等待发起者审核，通过后才能查看微信群二维码。</view>
-        <view class="apply-popup__notice-text">如无法参加，可在活动开始前至少3小时取消报名，并填写原因，发起者会收到通知。</view>
-        <view class="apply-popup__notice-text">线下活动请注意个人安全，谨慎确认集合地点；私聊、加好友和后续沟通请在微信内完成。</view>
-        <view class="apply-popup__notice-text">请勿恶意报名、骚扰他人或提交虚假信息，违规账号可能被限制或封禁。</view>
-      </view>
       <textarea
         class="apply-popup__textarea"
         value="{{applicationText}}"
