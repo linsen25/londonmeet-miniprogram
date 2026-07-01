@@ -1,5 +1,6 @@
 ﻿const {
   fetchUserProfile,
+  getCachedUserProfile,
   updateUserProfile,
   uploadProfileAvatar,
   uploadProfileCover
@@ -12,8 +13,34 @@ const {
 } = require("../../api/activity");
 const { fetchReviewTasks, submitBatchGood } = require("../../api/review");
 const { fetchNotificationUnreadCount } = require("../../api/notification");
+const { syncNotificationUnreadCount } = require("../../utils/notificationSound");
 
 const BADGE_REFRESH_INTERVAL = 30000;
+
+function gcd(a, b) {
+  let x = Math.abs(Math.round(a));
+  let y = Math.abs(Math.round(b));
+  while (y) {
+    const t = y;
+    y = x % y;
+    x = t;
+  }
+  return x || 1;
+}
+
+function buildCropScale(width, height) {
+  const w = Math.max(1, Math.round(width));
+  const h = Math.max(1, Math.round(height));
+  const d = gcd(w, h);
+  return `${Math.round(w / d)}:${Math.round(h / d)}`;
+}
+
+function getProfileCoverCropScale() {
+  const info = wx.getSystemInfoSync();
+  const rpxPerPx = 750 / info.windowWidth;
+  const rowRpx = (info.windowHeight / 8) * rpxPerPx;
+  return buildCropScale(750, rowRpx * 3);
+}
 
 Component({
   properties: {
@@ -29,10 +56,13 @@ Component({
     twoRowH: "320rpx",
     threeRowH: "480rpx",
     sevenHalfRowH: "1200rpx",
+    outer2CompactH: "320rpx",
+    outer2LoadingH: "480rpx",
+    outer2MinH: "480rpx",
 
     profile: {
       coverUrl: "",
-      avatarUrl: "https://res.cloudinary.com/ddkqatprj/image/upload/v1782629106/londonmeet/defaultUser.png",
+      avatarUrl: "/assets/logo.png",
       name: "MeetFun User",
       userId: "",
       displayUserId: "",
@@ -56,7 +86,7 @@ Component({
     showMoreMenu: false,
 
     outer2Tabs: [
-      { key: "ongoing", label: "活动中" },
+      { key: "ongoing", label: "待开始" },
       { key: "review", label: "待评价" }
     ],
     outer2TabValue: "ongoing",
@@ -105,10 +135,14 @@ Component({
         halfRowH: `${(rowRpx / 2).toFixed(2)}rpx`,
         twoRowH: `${(rowRpx * 2).toFixed(2)}rpx`,
         threeRowH: `${(rowRpx * 3).toFixed(2)}rpx`,
-        sevenHalfRowH: `${(rowRpx * 7.5).toFixed(2)}rpx`
+        sevenHalfRowH: `${(rowRpx * 7.5).toFixed(2)}rpx`,
+        outer2CompactH: `${(rowRpx * 1.8).toFixed(2)}rpx`,
+        outer2LoadingH: `${(rowRpx * 2.4).toFixed(2)}rpx`,
+        outer2MinH: `${(rowRpx * 2.4).toFixed(2)}rpx`
       });
 
-      this.loadProfile();
+      this.applyCachedProfile();
+      this.loadProfile({ force: true });
       this.loadMyOngoingActivities();
       this.loadPendingReviewCount();
       this.loadReviewTasks();
@@ -123,7 +157,7 @@ Component({
   pageLifetimes: {
     show() {
       this.startBadgeRefresh();
-      this.refreshBadges();
+      this.refreshHomeData({ forceContent: true });
     },
     hide() {
       this.stopBadgeRefresh();
@@ -133,9 +167,63 @@ Component({
   methods: {
     noop() {},
 
+    updateOuter2MinH(overrides) {
+      const state = {
+        ...this.data,
+        ...(overrides || {})
+      };
+      let loading = false;
+      let hasContent = false;
+
+      if (state.outer2TabValue === "ongoing") {
+        loading = !!state.outer2Loading;
+        hasContent = !!((state.outer2Posts || []).length);
+      } else {
+        loading = !!state.reviewTasksLoading;
+        hasContent = state.outer2ReviewTabValue === "member"
+          ? !!((state.reviewMemberPosts || []).length)
+          : !!((state.reviewEventPosts || []).length);
+      }
+
+      const nextMinH = loading
+        ? state.outer2LoadingH
+        : (hasContent ? state.sevenHalfRowH : state.outer2CompactH);
+
+      if (nextMinH && nextMinH !== this.data.outer2MinH) {
+        this.setData({ outer2MinH: nextMinH });
+      }
+    },
+
     refreshBadges() {
       this.loadPendingReviewCount();
       this.loadNotificationUnreadCount();
+    },
+
+    refreshHomeData(options) {
+      const opts = options || {};
+      this.refreshBadges();
+      if (opts.profile) {
+        this.loadProfile({ force: true });
+      }
+      this.refreshVisibleContent({ force: !!opts.forceContent });
+    },
+
+    refreshVisibleContent(options) {
+      const force = !!(options && options.force);
+      const now = Date.now();
+      if (!force && this._lastVisibleContentRefreshAt && now - this._lastVisibleContentRefreshAt < 5000) {
+        return;
+      }
+      this._lastVisibleContentRefreshAt = now;
+
+      if (this.data.outer2TabValue === "ongoing") {
+        this.loadMyOngoingActivities({ force });
+        return;
+      }
+      this.loadReviewTasks(
+        this.data.outer2ReviewTabValue === "member" ? "member" : "activity",
+        { force }
+      );
     },
 
     startBadgeRefresh() {
@@ -167,11 +255,21 @@ Component({
       this.triggerEvent("passthroughend", e);
     },
 
-    loadProfile() {
+    applyCachedProfile() {
+      const profile = getCachedUserProfile();
+      if (!profile) return false;
+      this.setData({ profile });
+      this.triggerEvent("accountstatus", { status: profile.status });
+      return true;
+    },
+
+    loadProfile(options) {
       if (this.data.profileLoading) return;
+      const force = !!(options && options.force);
+      if (!force && this.applyCachedProfile()) return;
       this.setData({ profileLoading: true });
 
-      fetchUserProfile()
+      fetchUserProfile({ force })
         .then((profile) => {
           const loginUser = wx.getStorageSync("loginUser") || {};
           wx.setStorageSync("loginUser", { ...loginUser, status: profile.status });
@@ -186,9 +284,9 @@ Component({
         });
     },
 
-    loadMyOngoingActivities() {
+    loadMyOngoingActivities(options) {
       if (this.data.outer2Loading) return;
-      this.setData({ outer2Loading: true });
+      this.setData({ outer2Loading: true }, () => this.updateOuter2MinH());
 
       fetchMyOngoingActivityPosts({
         page: 1,
@@ -197,39 +295,37 @@ Component({
         .then((res) => {
           this.setData({
             outer2Posts: res.list || []
-          });
+          }, () => this.updateOuter2MinH());
         })
         .catch((err) => {
           console.error("[my ongoing activities load failed]", err);
           this.setData({
             outer2Posts: []
-          });
+          }, () => this.updateOuter2MinH());
         })
         .finally(() => {
-          this.setData({ outer2Loading: false });
+          this.setData({ outer2Loading: false }, () => this.updateOuter2MinH());
         });
     },
 
     loadPendingReviewCount() {
       fetchPendingReviews()
         .then((items) => {
-          this.setData({
-            pendingReviewCount: (items || []).length
-          });
+          this.updatePendingReviewCount((items || []).length);
         })
         .catch((err) => {
           console.error("[pending review count load failed]", err);
-          this.setData({ pendingReviewCount: 0 });
+          this.updatePendingReviewCount(0);
         });
     },
 
     updatePendingReviewCount(count) {
-      this.setData({
-        pendingReviewCount: Math.max(0, Number(count) || 0)
-      });
+      const nextCount = Math.max(0, Number(count) || 0);
+      this.setData({ pendingReviewCount: nextCount });
+      this.triggerEvent("pendingreviewcountchange", { count: nextCount });
     },
 
-    loadReviewTasks(mode) {
+    loadReviewTasks(mode, options) {
       if (this.properties.accountDisabled) {
         this.setData({
           reviewEventPosts: [],
@@ -241,7 +337,7 @@ Component({
       if (this.data.reviewTasksLoading) return;
 
       const requestMode = mode || "";
-      this.setData({ reviewTasksLoading: true });
+      this.setData({ reviewTasksLoading: true }, () => this.updateOuter2MinH());
 
       fetchReviewTasks({ mode: requestMode })
         .then((items) => {
@@ -258,7 +354,7 @@ Component({
             );
           }
 
-          this.setData(nextData);
+          this.setData(nextData, () => this.updateOuter2MinH());
         })
         .catch((err) => {
           console.error("[review tasks load failed]", err);
@@ -270,16 +366,17 @@ Component({
             nextData.reviewMemberPosts = [];
             nextData.hasBatchGoodMembers = false;
           }
-          this.setData(nextData);
+          this.setData(nextData, () => this.updateOuter2MinH());
         })
         .finally(() => {
-          this.setData({ reviewTasksLoading: false });
+          this.setData({ reviewTasksLoading: false }, () => this.updateOuter2MinH());
         });
     },
 
     loadNotificationUnreadCount() {
       fetchNotificationUnreadCount()
         .then((count) => {
+          syncNotificationUnreadCount(count);
           this.setData({
             unreadNotificationCount: count,
             hasUnreadNotifications: count > 0
@@ -296,6 +393,7 @@ Component({
 
     updateNotificationUnreadCount(count) {
       const unreadCount = Number(count) || 0;
+      syncNotificationUnreadCount(unreadCount, { silent: true });
       this.setData({
         unreadNotificationCount: unreadCount,
         hasUnreadNotifications: unreadCount > 0
@@ -383,7 +481,7 @@ Component({
           reviewMemberPosts: remaining,
           hasBatchGoodMembers: remaining.some((item) => item.canBatchGood),
           showBatchGood: false
-        });
+        }, () => this.updateOuter2MinH());
         wx.showToast({
           title: skippedCount
             ? `成功${submittedTaskKeys.length}人，跳过${skippedCount}人`
@@ -435,7 +533,7 @@ Component({
       if (!avatarUrl) return;
 
       this.setData({ editProfileSaving: true });
-      wx.showLoading({ title: "涓婁紶涓?..", mask: true });
+      wx.showLoading({ title: "加载中", mask: true });
 
       uploadProfileAvatar(avatarUrl)
         .then((uploadedUrl) => {
@@ -480,9 +578,10 @@ Component({
           if (!filePath) return;
 
           this.setData({ editProfileSaving: true });
-          wx.showLoading({ title: "涓婁紶涓?..", mask: true });
+          wx.showLoading({ title: "加载中", mask: true });
 
-          uploadProfileCover(filePath)
+          this.cropProfileCover(filePath)
+            .then((croppedPath) => uploadProfileCover(croppedPath))
             .then((coverUrl) => {
               this.setData({
                 profile: {
@@ -502,6 +601,25 @@ Component({
               this.setData({ editProfileSaving: false });
             });
         }
+      });
+    },
+
+    cropProfileCover(filePath) {
+      if (!filePath || typeof wx.cropImage !== "function") {
+        return Promise.resolve(filePath);
+      }
+
+      const cropScale = getProfileCoverCropScale();
+      return new Promise((resolve) => {
+        wx.cropImage({
+          src: filePath,
+          cropScale,
+          success: (res) => resolve(res.tempFilePath || filePath),
+          fail: (err) => {
+            console.warn("[profile cover crop failed]", cropScale, err);
+            resolve(filePath);
+          }
+        });
       });
     },
 
@@ -565,8 +683,10 @@ Component({
       if (!id) return;
       const item = (this.data.outer2Posts || []).find((post) => post._id === id || post.id === id);
       if (!item) return;
+      const canCancel = ["pending", "approved", "joined_group"].includes(item.registrationStatus);
+      const itemList = canCancel ? ["查看活动", "取消报名"] : ["查看活动"];
       wx.showActionSheet({
-        itemList: ["查看活动", "取消报名"],
+        itemList,
         success: (res) => {
           if (res.tapIndex === 0) {
             this.triggerEvent("openpost", { id });
@@ -641,9 +761,10 @@ Component({
             .then(() => {
               const id = this.data.cancelActivityId;
               this.setData({
-                outer2Posts: (this.data.outer2Posts || []).filter(
-                  (item) => item._id !== id && item.id !== id
-                ),
+                outer2Posts: (this.data.outer2Posts || []).map((item) => {
+                  if (item._id !== id && item.id !== id) return item;
+                  return { ...item, registrationStatus: "cancelled" };
+                }),
                 showCancelRegistration: false,
                 cancelActivityId: null,
                 cancelReasonType: "",
@@ -651,7 +772,7 @@ Component({
                 cancelReasonLength: 0
               });
               wx.showToast({ title: "已取消报名", icon: "success" });
-              this.loadProfile();
+              this.loadProfile({ force: true });
             })
             .catch((err) => {
               wx.showToast({ title: err.message || "鍙栨秷鎶ュ悕澶辫触", icon: "none" });
@@ -720,24 +841,24 @@ Component({
     onOuter2TabChange(e) {
       const value = e && e.detail ? e.detail.value : "";
       if (!value) return;
-      this.setData({ outer2TabValue: value });
+      this.setData({ outer2TabValue: value }, () => this.updateOuter2MinH());
       if (value === "ongoing") {
-        this.loadMyOngoingActivities();
+        this.loadMyOngoingActivities({ force: true });
       } else if (value === "review") {
-        this.loadReviewTasks(this.data.outer2ReviewTabValue === "member" ? "member" : "activity");
+        this.loadReviewTasks(this.data.outer2ReviewTabValue === "member" ? "member" : "activity", { force: true });
       }
     },
 
     openReviewTasks() {
-      this.setData({ outer2TabValue: "review" });
-      this.loadReviewTasks(this.data.outer2ReviewTabValue === "member" ? "member" : "activity");
+      this.setData({ outer2TabValue: "review" }, () => this.updateOuter2MinH());
+      this.loadReviewTasks(this.data.outer2ReviewTabValue === "member" ? "member" : "activity", { force: true });
     },
 
     onOuter2ReviewTabChange(e) {
       const value = e && e.detail ? e.detail.value : "";
       if (!value) return;
-      this.setData({ outer2ReviewTabValue: value });
-      this.loadReviewTasks(value === "member" ? "member" : "activity");
+      this.setData({ outer2ReviewTabValue: value }, () => this.updateOuter2MinH());
+      this.loadReviewTasks(value === "member" ? "member" : "activity", { force: true });
     },
 
     onTapReviewEventItem(e) {
@@ -774,18 +895,19 @@ Component({
       const targetId = detail && detail.targetId;
 
       if (detail && detail.mode === "member") {
+        const reviewMemberPosts = this.data.reviewMemberPosts.filter((item) => {
+          if (itemId && item._id === itemId) return false;
+          return !(String(item.activityId) === String(activityId) && String(item.targetId) === String(targetId));
+        });
         this.setData({
-          reviewMemberPosts: this.data.reviewMemberPosts.filter((item) => {
-            if (itemId && item._id === itemId) return false;
-            return !(String(item.activityId) === String(activityId) && String(item.targetId) === String(targetId));
-          })
-          ,hasBatchGoodMembers: this.data.reviewMemberPosts.filter((item) => {
+          reviewMemberPosts,
+          hasBatchGoodMembers: reviewMemberPosts.filter((item) => {
             return !(
               Number(item.activityId) === Number(detail.activityId)
               && Number(item.targetId) === Number(detail.targetId)
             );
           }).some((item) => item.canBatchGood)
-        });
+        }, () => this.updateOuter2MinH());
         return;
       }
 
@@ -794,7 +916,7 @@ Component({
           if (itemId && item._id === itemId) return false;
           return String(item.activityId) !== String(activityId);
         })
-      });
+      }, () => this.updateOuter2MinH());
     }
   }
 });

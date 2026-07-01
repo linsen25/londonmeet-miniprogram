@@ -1,5 +1,5 @@
-const FALLBACK_COVER = "https://dummyimage.com/600x800/3a3a3a/ffffff.png&text=cover";
-const FALLBACK_AVATAR = "https://dummyimage.com/100x100/555555/ffffff.png&text=U";
+const FALLBACK_COVER = "/assets/logo.png";
+const FALLBACK_AVATAR = "/assets/logo.png";
 
 Component({
   properties: {
@@ -27,7 +27,9 @@ Component({
     isFull: false,
     isEnded: false,
     innerFavorited: false,
-    statusText: ""
+    isCancelled: false,
+    statusText: "",
+    statusClass: ""
   },
 
   observers: {
@@ -44,7 +46,7 @@ Component({
 
   methods: {
     syncCardData(card) {
-      const coverSrc = card.coverUrl || FALLBACK_COVER;
+      const coverSrc = card.thumbnailUrl || card.coverUrl || FALLBACK_COVER;
       const coverChanged = coverSrc !== this.data.coverSrc;
 
       this.setData({
@@ -57,7 +59,9 @@ Component({
         isFull: this.resolveIsFull(card),
         isEnded: !!card.ended || (Number(card.endAt) > 0 && Number(card.endAt) <= Date.now()),
         innerFavorited: !!card.favorited,
-        statusText: this.resolveStatusText(card.registrationStatus)
+        isCancelled: card.registrationStatus === "cancelled",
+        statusText: this.resolveStatusText(card.registrationStatus),
+        statusClass: this.resolveStatusClass(card.registrationStatus)
       });
     },
 
@@ -100,9 +104,19 @@ Component({
     },
 
     resolveStatusText(status) {
-      if (status === "pending") return "待审核";
+      if (status === "pending") return "审核中";
       if (status === "approved") return "已通过";
       if (status === "joined_group") return "已入群";
+      if (status === "rejected") return "未通过";
+      if (status === "cancelled") return "已取消";
+      return "";
+    },
+
+    resolveStatusClass(status) {
+      if (status === "pending") return "card__status--pending";
+      if (status === "approved" || status === "joined_group") return "card__status--approved";
+      if (status === "rejected") return "card__status--rejected";
+      if (status === "cancelled") return "card__status--cancelled";
       return "";
     },
 

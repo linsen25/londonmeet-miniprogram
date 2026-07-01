@@ -4,104 +4,121 @@
       <van-icon name="arrow-left" size="22px" color="#FFFFFF" />
       <text class="back-text">返回</text>
     </view>
-    <view class="topbar-title">待审核</view>
+    <view class="topbar-title">{{viewMode === 'activities' ? '活动审核' : selectedActivity.activityTitle}}</view>
     <view class="topbar-side"></view>
   </view>
 
-  <scroll-view class="review-list" scroll-y="true" show-scrollbar="false">
+  <scroll-view wx:if="{{viewMode === 'activities'}}" class="review-list" scroll-y="true" show-scrollbar="false">
     <view wx:if="{{loading}}" class="review-empty">加载中...</view>
-    <view wx:elif="{{!reviewers.length}}" class="review-empty">暂无待审核报名</view>
+    <view wx:elif="{{!activities.length}}" class="review-empty">暂无待开始活动</view>
 
     <block wx:else>
       <view
-        wx:for="{{reviewers}}"
-        wx:key="registrationId"
-        class="review-card"
+        wx:for="{{activities}}"
+        wx:key="activityId"
+        class="activity-row"
         data-index="{{index}}"
-        bindtap="onOpenDetail"
+        bindtap="onOpenActivity"
       >
-        <image class="avatar" src="{{item.avatarUrl}}" mode="aspectFill" />
-
-        <view class="review-main">
-          <view class="review-head">
-            <text class="review-name">{{item.nickname}}</text>
-            <text class="review-time">{{item.appliedText}}</text>
+        <view class="activity-dot" wx:if="{{item.hasUnread}}"></view>
+        <view class="activity-main">
+          <view class="activity-head">
+            <text class="activity-title">{{item.activityTitle}}</text>
+            <text class="activity-time">{{item.startText}}</text>
           </view>
-          <view class="activity-title">{{item.activityTitle}}</view>
-          <view class="application-preview">{{item.applicationPreview}}</view>
+          <view class="activity-meta">{{item.summaryText}}</view>
+          <view class="activity-meta">{{item.locationText || '未填写地点'}}</view>
         </view>
-
-        <view class="review-arrow">
-          <van-icon name="arrow" size="20px" color="rgba(255,255,255,0.48)" />
+        <view class="activity-count">
+          <text class="count-number">{{item.pendingCount}}</text>
+          <text class="count-label">待审</text>
         </view>
+        <van-icon name="arrow" size="20px" color="rgba(255,255,255,0.42)" />
       </view>
     </block>
   </scroll-view>
 
-  <van-popup
-    show="{{showDetail}}"
-    round
-    position="bottom"
-    lock-scroll
-    custom-style="padding: 22px 16px calc(22px + env(safe-area-inset-bottom)); background: rgb(46,46,46);"
-    bind:close="onCloseDetail"
-  >
-    <view wx:if="{{selectedReview}}" class="review-detail">
-      <view class="detail-title">报名详情</view>
-      <view class="detail-user">
-        <image class="detail-avatar" src="{{selectedReview.avatarUrl}}" mode="aspectFill" />
-        <view class="detail-user-main">
-          <view class="detail-name">{{selectedReview.nickname}}</view>
-          <view class="detail-activity">{{selectedReview.activityTitle}}</view>
-        </view>
-      </view>
-
-      <view class="detail-section">
-        <view class="detail-label">报名申请</view>
-        <view class="detail-text">{{selectedReview.fullApplicationText}}</view>
-      </view>
-
-      <view class="detail-section">
-        <view class="detail-label">用户评价</view>
-        <view class="detail-rating-list">
-          <view class="detail-rating-row">
-            <text>综合评分</text>
-            <text>{{selectedReview.hasRealRating ? selectedReview.overallRatingText : '5.0/5 · 暂无真实评分'}}</text>
-            <van-icon name="star" size="28rpx" color="#FFD60A" />
-          </view>
-          <view class="detail-rating-row">
-            <text>准时守约</text>
-            <text>{{selectedReview.punctualRatingText}}</text>
-          </view>
-          <view class="detail-rating-row">
-            <text>沟通配合</text>
-            <text>{{selectedReview.communicationRatingText}}</text>
-          </view>
-          <view class="detail-rating-row">
-            <text>友善礼貌</text>
-            <text>{{selectedReview.friendlyRatingText}}</text>
-          </view>
-          <view class="detail-rating-row">
-            <text>最近30天有效评价</text>
-            <text>{{selectedReview.reviewCount}} 人</text>
-          </view>
-        </view>
-      </view>
-
-      <view class="detail-actions">
-        <button
-          class="detail-btn detail-btn--reject"
-          data-id="{{selectedReview.registrationId}}"
-          disabled="{{actingId}}"
-          bindtap="onReject"
-        >拒绝</button>
-        <button
-          class="detail-btn detail-btn--approve"
-          data-id="{{selectedReview.registrationId}}"
-          disabled="{{actingId}}"
-          bindtap="onApprove"
-        >通过</button>
-      </view>
+  <view wx:else class="detail-shell">
+    <view class="review-tabs">
+      <view class="tab-item {{activeTab === 'registrations' ? 'tab-item--active' : ''}}" data-tab="registrations" bindtap="onSwitchTab">报名名单</view>
+      <view class="tab-item {{activeTab === 'blacklist' ? 'tab-item--active' : ''}}" data-tab="blacklist" bindtap="onSwitchTab">黑名单</view>
     </view>
-  </van-popup>
+
+    <view wx:if="{{activeTab === 'registrations'}}" class="status-tabs">
+      <view
+        wx:for="{{statusOptions}}"
+        wx:key="key"
+        class="status-chip {{statusFilter === item.key ? 'status-chip--active' : ''}}"
+        data-status="{{item.key}}"
+        bindtap="onSelectStatus"
+      >{{item.label}}</view>
+    </view>
+
+    <scroll-view class="review-list detail-list" scroll-y="true" show-scrollbar="false">
+      <view wx:if="{{loading}}" class="review-empty">加载中...</view>
+
+      <block wx:elif="{{activeTab === 'registrations'}}">
+        <view wx:if="{{!applicants.length}}" class="review-empty">暂无报名记录</view>
+        <view wx:for="{{applicants}}" wx:key="registrationId" class="applicant-card status-card-{{item.status}}">
+          <view class="applicant-head">
+            <image class="avatar" src="{{item.avatarUrl}}" mode="aspectFill" />
+            <view class="applicant-main">
+              <view class="applicant-name-row">
+                <text class="applicant-name">{{item.nickname}}</text>
+                <text class="status-pill status-{{item.status}}">{{item.statusText}}</text>
+              </view>
+              <view class="applicant-id">ID {{item.displayUserId}} · {{item.appliedText}}</view>
+            </view>
+          </view>
+
+          <view class="message-box">{{item.applicationPreview}}</view>
+
+          <view class="rating-grid">
+            <view class="rating-cell">
+              <text class="rating-label">综合</text>
+              <text class="rating-value">{{item.hasRealRating ? item.overallRatingText : '暂无'}}</text>
+            </view>
+            <view class="rating-cell">
+              <text class="rating-label">准时</text>
+              <text class="rating-value">{{item.punctualRatingText}}</text>
+            </view>
+            <view class="rating-cell">
+              <text class="rating-label">沟通</text>
+              <text class="rating-value">{{item.communicationRatingText}}</text>
+            </view>
+            <view class="rating-cell">
+              <text class="rating-label">友善</text>
+              <text class="rating-value">{{item.friendlyRatingText}}</text>
+            </view>
+          </view>
+
+          <view wx:if="{{item.status === 'rejected' || item.status === 'blacklisted' || item.status === 'cancelled'}}" class="reason-line">原因：{{item.reasonText}}</view>
+
+          <view wx:if="{{item.canReview}}" class="applicant-actions">
+            <button class="action-btn action-btn--approve" data-id="{{item.registrationId}}" disabled="{{actingId}}" bindtap="onApprove">通过</button>
+            <button class="action-btn action-btn--reject" data-id="{{item.registrationId}}" disabled="{{actingId}}" bindtap="onReject">拒绝</button>
+            <button class="action-btn action-btn--blacklist" data-id="{{item.registrationId}}" disabled="{{actingId}}" bindtap="onBlacklist">拉黑</button>
+          </view>
+        </view>
+      </block>
+
+      <block wx:else>
+        <view wx:if="{{!blacklist.length}}" class="review-empty">暂无黑名单</view>
+        <view wx:for="{{blacklist}}" wx:key="blacklistId" class="applicant-card">
+          <view class="applicant-head">
+            <image class="avatar" src="{{item.avatarUrl}}" mode="aspectFill" />
+            <view class="applicant-main">
+              <view class="applicant-name-row">
+                <text class="applicant-name">{{item.nickname}}</text>
+                <text class="status-pill status-blacklisted">已拉黑</text>
+              </view>
+              <view class="applicant-id">ID {{item.displayUserId}} · {{item.blacklistedText}}</view>
+            </view>
+          </view>
+          <view class="reason-line">原因：{{item.reasonText}}</view>
+          <button class="unblock-btn" data-id="{{item.blacklistId}}" disabled="{{actingId}}" bindtap="onUnblock">移出黑名单</button>
+        </view>
+      </block>
+    </scroll-view>
+  </view>
 </view>

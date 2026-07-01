@@ -8,6 +8,34 @@ const { fetchStaticMap } = require("../../api/map");
 const { fetchActivityTags } = require("../../api/tag");
 
 const RECRUIT_OPTIONS = Array.from({ length: 20 }, (_, index) => index + 1);
+const CREATE_DRAFT_KEY = "createpost:draft:v1";
+
+function gcd(a, b) {
+  let x = Math.abs(Math.round(a));
+  let y = Math.abs(Math.round(b));
+  while (y) {
+    const t = y;
+    y = x % y;
+    x = t;
+  }
+  return x || 1;
+}
+
+function buildCropScale(width, height) {
+  const w = Math.max(1, Math.round(width));
+  const h = Math.max(1, Math.round(height));
+  const d = gcd(w, h);
+  return `${Math.round(w / d)}:${Math.round(h / d)}`;
+}
+
+function getActivityCardCoverCropScale() {
+  const info = wx.getSystemInfoSync();
+  const rpxPerPx = 750 / info.windowWidth;
+  const rowRpx = (info.windowHeight / 8) * rpxPerPx;
+  const cardWidthRpx = (750 - 12 * 2 - 12) / 2;
+  const cardCoverHeightRpx = rowRpx * 2.5;
+  return buildCropScale(cardWidthRpx, cardCoverHeightRpx);
+}
 
 function buildTagList(tags, selectedMap) {
   const map = selectedMap || {};
@@ -82,6 +110,7 @@ Component({
 
     locationText: "",
     locationDisplay: "",
+    addressInputHeight: 44,
     mapImageUrl: "",
     mapLoadFailed: false,
     locationDebounceTimer: null,
@@ -125,22 +154,203 @@ Component({
           { values: ["AM", "PM"] }
         ]
       });
+      this._markClean();
 
       this._loadTags().then(() => {
         if (this.properties.mode === "edit" && this.properties.activityId) {
           this._loadEditActivity();
+        } else {
+          this._promptRestoreDraft();
         }
       });
     },
 
     detached() {
       if (this.locationDebounceTimer) clearTimeout(this.locationDebounceTimer);
+      if (this.draftSaveTimer) clearTimeout(this.draftSaveTimer);
     }
   },
 
   methods: {
     onBackTap() {
+      if (this._hasUnsavedChanges()) {
+        wx.showModal({
+          title: "确认退出",
+          content: this.properties.mode === "edit" ? "修改内容尚未保存，确定退出吗？" : "活动内容尚未发布，确定退出吗？",
+          confirmText: "退出",
+          confirmColor: "#ee4d4d",
+          success: (res) => {
+            if (res.confirm) this.triggerEvent("close");
+          }
+        });
+        return;
+      }
       this.triggerEvent("close");
+    },
+
+    _getFormSnapshot() {
+      const dateRange = this.data.dateRange || [];
+      const fileList = this.data.fileList || [];
+      return JSON.stringify({
+        title: this.data.title || "",
+        content: this.data.content || "",
+        tagIds: (this.data.tagIds || []).map(Number).sort((a, b) => a - b),
+        recruitCount: this.data.recruitCount || "",
+        startTime: this.data.startTime || "",
+        endTime: this.data.endTime || "",
+        dateRange: dateRange.map((value) => Number(value) || 0),
+        locationText: this.data.locationText || this.data.locationDisplay || "",
+        imageUrls: fileList.map((item) => item && item.url).filter(Boolean),
+        inviteQrRemainingDays: Number(this.data.inviteQrRemainingDays) || 7
+      });
+    },
+
+    _markClean() {
+      this._cleanSnapshot = this._getFormSnapshot();
+      this._hasQrChanged = false;
+    },
+
+    _hasUnsavedChanges() {
+      if (this.data.submitting) return false;
+      return this._hasQrChanged || this._getFormSnapshot() !== this._cleanSnapshot;
+    },
+
+    _canUseDraft() {
+      return this.properties.mode !== "edit";
+    },
+
+    _getDraftPayload() {
+      const qrUploader = this.selectComponent("#createQrUploader");
+      const qrValue = qrUploader && typeof qrUploader.getValue === "function"
+        ? qrUploader.getValue()
+        : {};
+      return {
+        savedAt: Date.now(),
+        title: this.data.title || "",
+        content: this.data.content || "",
+        tagIds: this.data.tagIds || [],
+        recruitCount: this.data.recruitCount || "",
+        startTime: this.data.startTime || "",
+        endTime: this.data.endTime || "",
+        dateRange: this.data.dateRange || null,
+        locationText: this.data.locationText || this.data.locationDisplay || "",
+        mapImageUrl: this.data.mapImageUrl || "",
+        imageUrls: (this.data.fileList || [])
+          .filter((item) => item && item.status === "done" && item.url)
+          .map((item) => item.url),
+        inviteQrUrl: qrValue.url || "",
+        inviteQrRemainingDays: Number(qrValue.remainingDays) || Number(this.data.inviteQrRemainingDays) || 7
+      };
+    },
+
+    _hasMeaningfulDraft(draft) {
+      if (!draft) return false;
+      return !!(
+        String(draft.title || "").trim()
+        || String(draft.content || "").trim()
+        || String(draft.locationText || "").trim()
+        || (draft.tagIds || []).length
+        || (draft.imageUrls || []).length
+        || draft.inviteQrUrl
+        || draft.dateRange
+        || draft.startTime
+        || draft.endTime
+        || draft.recruitCount
+      );
+    },
+
+    _scheduleDraftSave() {
+      if (!this._canUseDraft()) return;
+      if (this.draftSaveTimer) clearTimeout(this.draftSaveTimer);
+      this.draftSaveTimer = setTimeout(() => this._saveDraft(), 350);
+    },
+
+    _saveDraft() {
+      if (!this._canUseDraft()) return;
+      const draft = this._getDraftPayload();
+      if (!this._hasMeaningfulDraft(draft)) {
+        wx.removeStorageSync(CREATE_DRAFT_KEY);
+        return;
+      }
+      wx.setStorageSync(CREATE_DRAFT_KEY, draft);
+    },
+
+    _clearDraft() {
+      if (this.draftSaveTimer) clearTimeout(this.draftSaveTimer);
+      this.draftSaveTimer = null;
+      wx.removeStorageSync(CREATE_DRAFT_KEY);
+    },
+
+    _promptRestoreDraft() {
+      if (!this._canUseDraft()) return;
+      const draft = wx.getStorageSync(CREATE_DRAFT_KEY);
+      if (!this._hasMeaningfulDraft(draft)) return;
+      wx.showModal({
+        title: "发现未发布草稿",
+        content: "是否继续编辑上次未发布的活动？",
+        confirmText: "继续编辑",
+        cancelText: "清除",
+        success: (res) => {
+          if (res.confirm) {
+            this._restoreDraft(draft);
+          } else {
+            this._clearDraft();
+          }
+        }
+      });
+    },
+
+    _restoreDraft(draft) {
+      const tagIds = (draft.tagIds || []).map(Number).filter(Boolean);
+      const selectedTags = (this.data.allTags || []).filter((tag) => tagIds.includes(Number(tag.id)));
+      const selectedTagMap = {};
+      selectedTags.forEach((tag) => { selectedTagMap[tag.id] = true; });
+      const fileList = (draft.imageUrls || []).filter(Boolean).map((url) => ({
+        url,
+        status: "done",
+        message: ""
+      }));
+      const content = String(draft.content || "");
+      const locationText = String(draft.locationText || "");
+
+      this.setData({
+        title: draft.title || "",
+        lastTitle: draft.title || "",
+        content,
+        lastContent: content,
+        contentLength: content.length,
+        tagIds,
+        selectedTags,
+        selectedTagMap,
+        filteredTags: buildTagList(this.data.allTags, selectedTagMap),
+        tagsDisplay: selectedTags.length ? selectedTags.map((tag) => tag.name).join(" ") : "请选择活动标签",
+        recruitCount: draft.recruitCount || "",
+        recruitDisplay: draft.recruitCount || "请选择人数",
+        dateRange: draft.dateRange || null,
+        dateText: draft.dateRange && draft.dateRange[0] && draft.dateRange[1]
+          ? `${this._fmtDate(draft.dateRange[0])} - ${this._fmtDate(draft.dateRange[1])}`
+          : "请选择开始和结束日期",
+        startTime: draft.startTime || "",
+        startTimeDisplay: draft.startTime || "请选择开始时间",
+        endTime: draft.endTime || "",
+        endTimeDisplay: draft.endTime || "请选择结束时间",
+        locationText,
+        locationDisplay: locationText,
+        addressInputHeight: this._resolveAddressInputHeight(locationText),
+        mapImageUrl: draft.mapImageUrl || "",
+        mapLoadFailed: false,
+        fileList,
+        inviteQrRemainingDays: Number(draft.inviteQrRemainingDays) || 7
+      }, () => {
+        this._syncPreviewImages();
+        const uploader = this.selectComponent("#createQrUploader");
+        if (uploader && typeof uploader.reset === "function") {
+          uploader.reset({
+            url: draft.inviteQrUrl || "",
+            remainingDays: Number(draft.inviteQrRemainingDays) || 7
+          });
+        }
+      });
     },
 
     onOpenHelp(e) {
@@ -209,11 +419,8 @@ Component({
         .then((detail) => {
           if (!detail.isCreator) throw new Error("只有活动发起者可以修改");
           if (!detail.canEdit) {
-            if (detail.editBlockedReason === "edit_limit_reached") {
-              throw new Error("该活动的一次修改机会已经使用完");
-            }
-            if (detail.editBlockedReason === "within_12_hours") {
-              throw new Error("距离原活动开始时间已不足12小时，不能修改");
+            if (detail.editBlockedReason === "ended") {
+              throw new Error("活动已结束，不能修改");
             }
             throw new Error("该活动当前不可修改");
           }
@@ -247,10 +454,14 @@ Component({
             endTimeDisplay: this._fmtTime(end),
             locationText: detail.locationText,
             locationDisplay: detail.locationText,
+            addressInputHeight: this._resolveAddressInputHeight(detail.locationText),
             mapImageUrl: detail.mapImageUrl,
             fileList: imageUrls.map((url) => ({ url, status: "done", message: "" })),
             originalStartAt: detail.startAt
-          }, () => this._syncPreviewImages());
+          }, () => {
+            this._syncPreviewImages();
+            this._markClean();
+          });
         })
         .catch((err) => {
           wx.showToast({ title: err.message || "活动加载失败", icon: "none" });
@@ -293,14 +504,28 @@ Component({
       if (!ok) wx.showToast({ title: "只允许上传图片", icon: "none" });
     },
 
-    afterRead(e) {
+    async afterRead(e) {
       const detail = (e && e.detail) || {};
       const files = Array.isArray(detail.file) ? detail.file : [detail.file];
       const fileList = this.data.fileList || [];
       const remain = (this.data.maxCount || 4) - fileList.length;
       const picked = files.slice(0, Math.max(0, remain));
+      const normalized = [];
 
-      const appended = picked.map((file) => ({
+      for (let index = 0; index < picked.length; index += 1) {
+        const file = picked[index] || {};
+        const shouldCropCover = fileList.length === 0 && index === 0;
+        const sourceUrl = file.tempFilePath || file.url;
+        const url = shouldCropCover
+          ? await this._cropImage(sourceUrl, getActivityCardCoverCropScale())
+          : sourceUrl;
+        normalized.push({
+          ...file,
+          url
+        });
+      }
+
+      const appended = normalized.map((file) => ({
         url: file.url,
         localUrl: file.url,
         name: file.name || "",
@@ -310,8 +535,11 @@ Component({
       }));
 
       const startIndex = fileList.length;
-      this.setData({ fileList: fileList.concat(appended) }, () => this._syncPreviewImages());
-      picked.forEach((file, offset) => {
+      this.setData({ fileList: fileList.concat(appended) }, () => {
+        this._syncPreviewImages();
+        this._scheduleDraftSave();
+      });
+      normalized.forEach((file, offset) => {
         this._uploadActivityImage(file, startIndex + offset);
       });
 
@@ -320,13 +548,31 @@ Component({
       }
     },
 
+    _cropImage(src, cropScale) {
+      if (!src || typeof wx.cropImage !== "function") return Promise.resolve(src);
+      return new Promise((resolve) => {
+        wx.cropImage({
+          src,
+          cropScale,
+          success: (res) => resolve(res.tempFilePath || src),
+          fail: (err) => {
+            console.warn("[activity cover crop failed]", cropScale, err);
+            resolve(src);
+          }
+        });
+      });
+    },
+
     onDelete(e) {
       const index = Number(e && e.detail ? e.detail.index : -1);
       if (index < 0) return;
 
       const list = (this.data.fileList || []).slice();
       list.splice(index, 1);
-      this.setData({ fileList: list }, () => this._syncPreviewImages());
+      this.setData({ fileList: list }, () => {
+        this._syncPreviewImages();
+        this._scheduleDraftSave();
+      });
     },
 
     _uploadActivityImage(file, index) {
@@ -342,7 +588,10 @@ Component({
             status: "done",
             message: ""
           };
-          this.setData({ fileList: list }, () => this._syncPreviewImages());
+          this.setData({ fileList: list }, () => {
+            this._syncPreviewImages();
+            this._scheduleDraftSave();
+          });
           if (list.every((item) => item && item.status === "done")) {
             this._clearValidationError("images");
           }
@@ -391,6 +640,7 @@ Component({
       const title = e.detail.value || "";
       this.setData({ title });
       if (title.trim()) this._clearValidationError("title");
+      this._scheduleDraftSave();
     },
 
     onContentInput(e) {
@@ -400,14 +650,19 @@ Component({
         contentLength: content.length
       });
       if (content.trim()) this._clearValidationError("content");
+      this._scheduleDraftSave();
     },
 
     onGroupQrChange(event) {
       const detail = event.detail || {};
+      if (detail.url || detail.uploading || detail.failed) {
+        this._hasQrChanged = true;
+      }
       this.setData({
         inviteQrRemainingDays: Number(detail.remainingDays) || 7
       });
       if (detail.url) this._clearValidationError("invite");
+      this._scheduleDraftSave();
     },
 
     onTapRecruitRow() {
@@ -426,6 +681,7 @@ Component({
         showRecruitPicker: false
       });
       if (value) this._clearValidationError("recruit");
+      this._scheduleDraftSave();
     },
 
     onTapStartTimeRow() {
@@ -470,6 +726,7 @@ Component({
 
       this.setData(next);
       if (field) this._clearValidationError(field);
+      this._scheduleDraftSave();
     },
 
     _parsePickerValue(event) {
@@ -546,6 +803,7 @@ Component({
         filteredTags: buildTagList(this.data.allTags, {}),
         tagsDisplay: "请选择活动标签"
       });
+      this._scheduleDraftSave();
     },
 
     onConfirmTags() {
@@ -554,6 +812,7 @@ Component({
         tagsDisplay: names.length ? names.join(" ") : "请选择活动标签"
       });
       if (names.length) this._clearValidationError("tags");
+      this._scheduleDraftSave();
       this.onCloseTagPicker();
     },
 
@@ -589,6 +848,7 @@ Component({
         dateText: `${this._fmtDate(start)} - ${this._fmtDate(end)}`
       });
       this._clearValidationError("date");
+      this._scheduleDraftSave();
     },
 
     _fmtDate(ts) {
@@ -606,6 +866,11 @@ Component({
       return String(value || "").replace(/\s+/g, " ").trim();
     },
 
+    _resolveAddressInputHeight(value) {
+      const text = String(value || "");
+      return text.includes("\n") || text.length > 28 ? 96 : 44;
+    },
+
     _buildStaticMapUrl(value) {
       const location = this._normalizeMapLocation(this._sanitizeLocationText(value));
       if (!location) return;
@@ -614,25 +879,43 @@ Component({
         .then((res) => {
           if (res && res.imageUrl) {
             this.setData({ mapImageUrl: res.imageUrl, mapLoadFailed: false });
+            this._scheduleDraftSave();
             return;
           }
           this.setData({ mapImageUrl: "", mapLoadFailed: true });
           if (res && res.error) {
             console.warn("[static map unavailable]", res.error);
-            wx.showToast({ title: "地图暂时不可用", icon: "none" });
           }
         })
         .catch((err) => {
           console.error("Map Request Error", err);
           this.setData({ mapImageUrl: "", mapLoadFailed: true });
-          wx.showToast({ title: "地图加载失败", icon: "none" });
+          wx.showToast({ title: "地图预览暂不可用", icon: "none" });
         });
+    },
+
+    onMapImageError() {
+      this.setData({ mapImageUrl: "", mapLoadFailed: true });
+      wx.showToast({ title: "地图预览暂不可用", icon: "none" });
+    },
+
+    onRetryMapPreview() {
+      const value = this.data.locationText || this.data.locationDisplay;
+      if (!String(value || "").trim()) return;
+      this.setData({ mapImageUrl: "", mapLoadFailed: false });
+      this._buildStaticMapUrl(value);
     },
 
     onLocationInput(e) {
       const value = (e.detail && e.detail.value) || "";
-      this.setData({ locationText: value, locationDisplay: value, mapLoadFailed: false });
+      this.setData({
+        locationText: value,
+        locationDisplay: value,
+        addressInputHeight: this._resolveAddressInputHeight(value),
+        mapLoadFailed: false
+      });
       if (value.trim()) this._clearValidationError("location");
+      this._scheduleDraftSave();
 
       if (this.locationDebounceTimer) clearTimeout(this.locationDebounceTimer);
       this.locationDebounceTimer = setTimeout(() => this._buildStaticMapUrl(value), 1000);
@@ -641,9 +924,15 @@ Component({
     onPasteLocation() {
       wx.getClipboardData({
         success: (res) => {
-          const text = res.data || "";
-          this.setData({ locationText: text, locationDisplay: text, mapLoadFailed: false });
+          const text = String(res.data || "").trim();
+          this.setData({
+            locationText: text,
+            locationDisplay: text,
+            addressInputHeight: this._resolveAddressInputHeight(text),
+            mapLoadFailed: false
+          });
           if (text.trim()) this._clearValidationError("location");
+          this._scheduleDraftSave();
           this._buildStaticMapUrl(text);
         }
       });
@@ -654,14 +943,26 @@ Component({
 
       wx.chooseLocation({
         success: (res) => {
-          const text = res && (res.name || res.address) ? (res.name || res.address) : "已选择位置";
-          this.setData({ locationText: text, locationDisplay: text, mapLoadFailed: false });
+          const text = String(res && (res.name || res.address) ? (res.name || res.address) : "已选择位置").trim();
+          this.setData({
+            locationText: text,
+            locationDisplay: text,
+            addressInputHeight: this._resolveAddressInputHeight(text),
+            mapLoadFailed: false
+          });
           this._clearValidationError("location");
+          this._scheduleDraftSave();
           this._buildStaticMapUrl(text);
         },
         fail: () => {
           if (!this.data.locationText) {
-            this.setData({ locationText: "", locationDisplay: "", mapImageUrl: "", mapLoadFailed: false });
+            this.setData({
+              locationText: "",
+              locationDisplay: "",
+              addressInputHeight: this._resolveAddressInputHeight(""),
+              mapImageUrl: "",
+              mapLoadFailed: false
+            });
           }
         }
       });
@@ -729,6 +1030,7 @@ Component({
         : qrUploader.getValue();
       const inviteQrUrl = qrValue.url || "";
       const recruitCount = this._parseRecruitCount(this.data.recruitCount);
+      const editing = this.properties.mode === "edit";
 
       if (activityFiles.some((item) => item && item.status === "uploading")) {
         return this._showValidationError("images", "活动图片正在上传，请稍候");
@@ -763,6 +1065,9 @@ Component({
       if (startAt < Date.now()) {
         return this._showValidationError("start", "开始时间不能早于当前时间");
       }
+      if (!editing && startAt < Date.now() + 3 * 60 * 60 * 1000) {
+        return this._showValidationError("start", "活动开始时间必须至少晚于当前时间3小时");
+      }
       if (endAt <= startAt) {
         return this._showValidationError("end", "结束时间必须晚于开始时间");
       }
@@ -778,13 +1083,13 @@ Component({
       if (!locationText) {
         return this._showValidationError("location", "活动地址未填写");
       }
-      if (this.properties.mode !== "edit" && qrValue.uploading) {
+      if (!editing && qrValue.uploading) {
         return this._showValidationError("invite", "加群码正在上传，请稍候");
       }
-      if (this.properties.mode !== "edit" && qrValue.failed) {
+      if (!editing && qrValue.failed) {
         return this._showValidationError("invite", "加群码上传失败，请重新上传");
       }
-      if (this.properties.mode !== "edit" && !inviteQrUrl) {
+      if (!editing && !inviteQrUrl) {
         return this._showValidationError("invite", "加群码未上传");
       }
 
@@ -824,6 +1129,8 @@ Component({
           .then((activity) => {
             wx.hideLoading();
             wx.showToast({ title: editing ? "修改成功" : "创建成功", icon: "success" });
+            this._markClean();
+            if (!editing) this._clearDraft();
             this.setData({ submitting: false });
             this.triggerEvent(editing ? "updated" : "created", { activity });
           })
@@ -835,18 +1142,7 @@ Component({
           });
       };
 
-      if (!editing) {
-        execute();
-        return;
-      }
-      wx.showModal({
-        title: "确认修改活动",
-        content: "活动只能成功修改一次，开始时间只能往后延。保存后将通知所有已通过参与者。",
-        confirmText: "确认修改",
-        success: (res) => {
-          if (res.confirm) execute();
-        }
-      });
+      execute();
     }
   }
 });

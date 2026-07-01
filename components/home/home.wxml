@@ -70,18 +70,18 @@
               <view class="stats">
                 <view class="stat">
                   <view class="stat-num">{{profile.stats.myEvents}}</view>
-                  <view class="stat-lbl">我的活动</view>
+                  <view class="stat-lbl">发起活动</view>
                 </view>
                 <view class="stat">
                   <view class="stat-num">{{profile.stats.ongoing}}</view>
-                  <view class="stat-lbl">活动中</view>
+                  <view class="stat-lbl">报名活动</view>
                 </view>
               </view>
 
               <view class="edit-wrap">
                 <mf-button
                   class="edit-btn"
-                  text="Edit Profile"
+                  text="编辑主页"
                   bg="rgb(46,46,46)"
                   color="#FFFFFF"
                   height="72rpx"
@@ -99,7 +99,7 @@
       <view wx:if="{{showEditProfile}}" class="edit-profile-mask" bindtap="onCloseEditProfile">
         <view class="edit-profile-panel" catchtap="noop">
           <view class="edit-profile-head">
-            <text class="edit-profile-title">Edit Profile</text>
+            <text class="edit-profile-title">编辑主页</text>
             <text class="edit-profile-close" bindtap="onCloseEditProfile">×</text>
           </view>
 
@@ -110,6 +110,7 @@
           >
             <text class="edit-cover-text">{{profile.coverUrl ? '更换背景图' : '上传背景图'}}</text>
           </view>
+          <view class="edit-cover-tip">背景图会按主页顶部展示区域裁剪，请选择主体清晰的图片。</view>
 
           <view class="edit-identity">
             <button
@@ -167,6 +168,7 @@
                 bindinput="onEditTagInput"
               />
             </view>
+            <view class="edit-profile-tip">温馨提示：您的头像、昵称、格言和标签会展示在您创建的活动中，参与者可以看到。</view>
           </view>
 
           <view class="edit-actions">
@@ -184,47 +186,21 @@
         </view>
       </view>
 
-      <!-- ✅ 下面三块（你原来的 template 保留，先用） -->
-
       <mf-template
         rows="1"
         density="md"
         align="left"
         bg="rgb(46,46,46)"
         customStyle="margin:0 24rpx;width:auto;"
-        bind:rowtap="onTapPendingReview"
+        bind:rowtap="onTapMyActivities"
       >
         <view slot="left" class="pending-entry-icon">
-          <van-icon
-            name="warning-o"
-            size="24px"
-            color="#FFFFFF"
-          />
+          <van-icon name="records" size="24px" color="#FFFFFF" />
           <view wx:if="{{pendingReviewCount > 0}}" class="entry-icon-dot"></view>
         </view>
         <view class="mid">
-          <view class="t1">待审核</view>
-          <view class="t2">审核报名成员</view>
-        </view>
-        <view slot="right" class="arrow">
-          <van-icon name="arrow" size="22px" color="#FFFFFF" />
-        </view>
-      </mf-template>
-
-      <mf-template
-        rows="1"
-        density="md"
-        align="left"
-        bg="rgb(46,46,46)"
-        customStyle="margin:0 24rpx;width:auto;"
-        bind:rowtap="onTapFavorites"
-      >
-        <view slot="left" class="pending-entry-icon">
-          <van-icon name="star" size="24px" color="#FFD60A" />
-        </view>
-        <view class="mid">
-          <view class="t1">我的收藏</view>
-          <view class="t2">查看收藏的活动</view>
+          <view class="t1">我的活动</view>
+          <view class="t2">查看审批、修改活动内容和二维码</view>
         </view>
         <view slot="right" class="arrow">
           <van-icon name="arrow" size="22px" color="#FFFFFF" />
@@ -244,7 +220,7 @@
         </view>
         <view class="mid">
           <view class="t1">历史活动</view>
-          <view class="t2">查看已结束且报名通过的活动</view>
+          <view class="t2">查看已结束的活动记录</view>
         </view>
         <view slot="right" class="arrow">
           <van-icon name="arrow" size="22px" color="#FFFFFF" />
@@ -257,14 +233,14 @@
         align="left"
         bg="rgb(46,46,46)"
         customStyle="margin:0 24rpx;width:auto;"
-        bind:rowtap="onTapMyActivities"
+        bind:rowtap="onTapFavorites"
       >
         <view slot="left" class="pending-entry-icon">
-          <van-icon name="records" size="24px" color="#FFFFFF" />
+          <van-icon name="star" size="24px" color="#FFD60A" />
         </view>
         <view class="mid">
-          <view class="t1">我的活动</view>
-          <view class="t2">管理我创建的活动与群二维码</view>
+          <view class="t1">我的收藏</view>
+          <view class="t2">查看感兴趣的活动</view>
         </view>
         <view slot="right" class="arrow">
           <van-icon name="arrow" size="22px" color="#FFFFFF" />
@@ -277,7 +253,7 @@
       <!-- Outer2: 活动列表（Segment + 瀑布流） -->
       <mf-shell
         class="outer2-shell"
-        minH="{{sevenHalfRowH}}"
+        minH="{{outer2MinH}}"
         bg="rgb(46,46,46)"
         radius="18rpx 18rpx 0 0"
         padding="0"
@@ -305,16 +281,18 @@
             />
           </view>
 
-          <!-- 活动中：瀑布流 -->
+          <!-- 待开始：瀑布流 -->
           <scroll-view
             wx:if="{{outer2TabValue === 'ongoing'}}"
             class="outer2-waterfall"
             scroll-y="true"
             enhanced="true"
           >
-            <view wx:if="{{outer2Loading}}" class="outer2-empty">加载中...</view>
-            <view wx:elif="{{!outer2Posts.length}}" class="outer2-empty">暂无活动中内容</view>
-            <view class="outer2-masonry">
+            <view wx:if="{{outer2Loading}}" class="outer2-loading">
+              <view class="outer2-spinner"></view>
+            </view>
+            <view wx:elif="{{!outer2Posts.length}}" class="outer2-empty">暂无待开始活动</view>
+            <view wx:else class="outer2-masonry">
               <view
                 class="m-item"
                 wx:for="{{outer2Posts}}"
@@ -358,7 +336,9 @@
               wx:if="{{outer2ReviewTabValue === 'event'}}"
               class="outer2-review-list"
             >
-              <view wx:if="{{reviewTasksLoading}}" class="outer2-empty">加载中...</view>
+              <view wx:if="{{reviewTasksLoading}}" class="outer2-loading">
+                <view class="outer2-spinner"></view>
+              </view>
               <view wx:elif="{{!reviewEventPosts.length}}" class="outer2-empty">暂无待评价活动</view>
               <block wx:else>
                 <mf-template
@@ -400,7 +380,9 @@
                 class="batch-good-btn"
                 bindtap="onBatchGoodMembers"
               >一键好评</button>
-              <view wx:if="{{reviewTasksLoading}}" class="outer2-empty">加载中...</view>
+              <view wx:if="{{reviewTasksLoading}}" class="outer2-loading">
+                <view class="outer2-spinner"></view>
+              </view>
               <view wx:elif="{{!reviewMemberPosts.length}}" class="outer2-empty">暂无待评价成员</view>
               <block wx:else>
                 <mf-template
@@ -508,7 +490,7 @@
         </view>
 
         <view class="cancel-tip">
-          仅可在活动开始前至少12小时取消。取消成功后会立即释放名额，并将原因通知发起者。
+          仅可在活动开始前至少3小时取消。取消成功后会立即释放名额，并将原因通知发起者。
         </view>
 
         <view class="cancel-label">请选择原因</view>

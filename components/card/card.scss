@@ -30,6 +30,21 @@
   background: #303030;
 }
 
+.card--cancelled {
+  background: #303030;
+  box-shadow: none;
+}
+
+.card--cancelled .card__img,
+.card--cancelled .card__img.is-loaded {
+  filter: grayscale(1);
+  opacity: 0.62;
+}
+
+.card--cancelled .card__body {
+  background: #303030;
+}
+
 .card__ended-label {
   height: 34rpx;
   display: flex;
@@ -74,7 +89,24 @@
   color: #fff;
   background: rgba(0, 0, 0, 0.68);
   font-size: 22rpx;
+  font-weight: 800;
   line-height: 1;
+}
+
+.card__status--pending {
+  background: #FF3B30;
+}
+
+.card__status--approved {
+  background: #07C160;
+}
+
+.card__status--rejected {
+  background: #8E8E93;
+}
+
+.card__status--cancelled {
+  background: #6B6B70;
 }
 
 .card__img {

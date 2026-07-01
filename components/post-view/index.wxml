@@ -10,8 +10,50 @@
   </view>
 
   <!-- 濠婃艾濮╅崘鍛啇 -->
+  <view wx:if="{{false}}" class="post-loading">
+    <view wx:if="{{loading}}" class="post-loading__spinner"></view>
+    <text class="post-loading__text">{{loading ? '加载中...' : '加载失败'}}</text>
+  </view>
+
   <scroll-view class="post-scroll" scroll-y="true" enhanced="true">
-    <view class="post-scroll-inner">
+    <view wx:if="{{!detailReady}}" class="post-scroll-inner post-skeleton">
+      <view class="post-shell">
+        <view class="skeleton-organizer">
+          <view class="skeleton-avatar"></view>
+          <view class="skeleton-lines">
+            <view class="skeleton-line skeleton-line--sm"></view>
+            <view class="skeleton-line skeleton-line--md"></view>
+          </view>
+          <view class="skeleton-pill"></view>
+        </view>
+        <view class="skeleton-line skeleton-line--wide"></view>
+        <view class="skeleton-media"></view>
+        <view class="skeleton-line skeleton-line--title"></view>
+        <view class="skeleton-line skeleton-line--wide"></view>
+        <view class="skeleton-line skeleton-line--md"></view>
+      </view>
+      <view class="post-shell post-shell--progress">
+        <view class="skeleton-tags">
+          <view class="skeleton-tag"></view>
+          <view class="skeleton-tag"></view>
+          <view class="skeleton-tag"></view>
+        </view>
+        <view class="skeleton-bar"></view>
+      </view>
+      <view class="post-shell post-shell--time">
+        <view class="skeleton-line skeleton-line--md"></view>
+        <view class="skeleton-time-row"></view>
+        <view class="time-divider"></view>
+        <view class="skeleton-time-row"></view>
+      </view>
+      <view class="post-shell">
+        <view class="skeleton-map"></view>
+        <view class="skeleton-address"></view>
+      </view>
+      <view class="skeleton-action"></view>
+    </view>
+
+    <view wx:else class="post-scroll-inner">
 
       <!-- 閳?鐠囷附鍎忔径褍娼￠敍姘崇枂閹绢厼娴?+ 閺嶅洭顣?+ 閹诲繗鍫?-->
       <view class="post-shell">
@@ -25,7 +67,17 @@
             <text wx:if="{{hasOrganizerRating}}" class="organizer-star">★</text>
             <text class="organizer-score">{{organizerRatingText}}</text>
           </view>
-          <view wx:if="{{!isCreator}}" class="organizer-report" catchtap="onOpenReport">举报</view>
+          <view class="organizer-actions">
+            <view wx:if="{{!isCreator}}" class="organizer-action organizer-action--report" catchtap="onOpenReport">举报</view>
+            <view class="organizer-action organizer-action--favorite {{favorited ? 'is-active' : ''}}" catchtap="onToggleFavorite">
+              <van-icon
+                name="{{favorited ? 'star' : 'star-o'}}"
+                size="14px"
+                color="{{favorited ? '#FFD60A' : 'rgba(255,255,255,0.78)'}}"
+              />
+              <text>{{favorited ? '已收藏' : '收藏'}}</text>
+            </view>
+          </view>
         </view>
         <view class="organizer-profile">
           <view class="organizer-motto">{{authorMotto}}</view>
@@ -155,6 +207,10 @@
     </view>
   </scroll-view>
 
+  <view wx:if="{{loading && !detailReady}}" class="post-loading-overlay">
+    <view class="post-loading__spinner"></view>
+  </view>
+
   <view
     wx:if="{{showImagePreview}}"
     class="image-preview"
@@ -199,6 +255,13 @@
     <view class="apply-popup">
       <view class="apply-popup__title">报名申请</view>
       <view class="apply-popup__activity">{{title}}</view>
+      <view class="apply-popup__notice">
+        <view class="apply-popup__notice-title">报名前提示</view>
+        <view class="apply-popup__notice-text">提交后需等待发起者审核，通过后才能查看微信群二维码。</view>
+        <view class="apply-popup__notice-text">如无法参加，可在活动开始前至少3小时取消报名，并填写原因，发起者会收到通知。</view>
+        <view class="apply-popup__notice-text">线下活动请注意个人安全，谨慎确认集合地点；私聊、加好友和后续沟通请在微信内完成。</view>
+        <view class="apply-popup__notice-text">请勿恶意报名、骚扰他人或提交虚假信息，违规账号可能被限制或封禁。</view>
+      </view>
       <textarea
         class="apply-popup__textarea"
         value="{{applicationText}}"
@@ -292,6 +355,13 @@
 
   <view class="popup-hint">
     {{qrExpired ? '过期二维码已停止展示和识别' : '长按或点击二维码可查看大图'}}
+  </view>
+  <view
+    wx:if="{{canRemindQr}}"
+    class="qr-remind {{qrReminderSending ? 'is-loading' : ''}}"
+    bindtap="onRemindQrUpdate"
+  >
+    {{qrReminderSending ? '正在提醒...' : '二维码无法识别？提醒发起者更换'}}
   </view>
 </van-popup>
 </view>

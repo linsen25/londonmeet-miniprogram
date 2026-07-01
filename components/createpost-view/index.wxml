@@ -45,11 +45,14 @@
 
       <view class="upload-area">
         <view class="section-mini-title">上传图片（上限4张）</view>
+        <view class="upload-hint">第一张图片为活动封面，需裁剪为活动卡片展示比例。</view>
         <van-uploader
           file-list="{{fileList}}"
           max-count="{{maxCount}}"
           max-size="{{maxSize}}"
           multiple
+          compressed="{{true}}"
+          size-type="{{['compressed']}}"
           bind:before-read="beforeRead"
           bind:after-read="afterRead"
           bind:delete="onDelete"
@@ -157,12 +160,15 @@
     </view>
 
     <view class="card bottom-card">
+      <view class="map-preview-tip">请确保地址在地图中正确显示后再上传。</view>
+      <view class="map-privacy-tip">请勿填写住址、宿舍门牌等私密地址。建议只填写大概区域或公共集合点，具体集合位置可在微信群内统一发布。</view>
       <view class="map-preview">
         <image
           wx:if="{{mapImageUrl}}"
           class="map-image"
           src="{{mapImageUrl}}"
           mode="aspectFill"
+          binderror="onMapImageError"
         />
 
         <view wx:elif="{{locationText && !mapLoadFailed}}" class="map-selected">
@@ -171,8 +177,9 @@
         </view>
 
         <view wx:elif="{{locationText && mapLoadFailed}}" class="map-selected">
-          <text class="map-selected-title">地图暂时不可用</text>
+          <text class="map-selected-title">地图预览暂不可用</text>
           <text class="map-selected-text">{{locationText}}</text>
+          <view class="map-retry" bindtap="onRetryMapPreview">重新加载地图</view>
         </view>
 
         <view wx:else class="map-placeholder">
@@ -190,9 +197,10 @@
           <text class="address-label">地址:</text>
           <textarea
             class="address-input"
+            style="height: {{addressInputHeight}}rpx;"
             value="{{locationDisplay}}"
             placeholder="请粘贴 Google Maps 地址"
-            auto-height
+            auto-height="{{false}}"
             show-confirm-bar="{{false}}"
             adjust-position="{{true}}"
             cursor-spacing="24"
@@ -217,6 +225,16 @@
           bind:change="onGroupQrChange"
         />
         <view wx:if="{{validationErrorKey === 'invite'}}" class="validation-message">{{validationErrorMessage}}</view>
+      </view>
+
+      <view wx:if="{{mode !== 'edit'}}" class="activity-rule-box">
+        <view class="activity-rule-title">温馨提示</view>
+        <view class="activity-rule-text">创建后可在“主页 - 我的活动”中查看活动、修改内容、更换群二维码、下架活动，也可以进入“待审核报名”处理参与者申请。</view>
+        <view class="activity-rule-text">有人报名、取消报名、二维码提醒、活动下架等消息会发送到通知中心。请及时查看，避免错过审核和活动管理提醒。</view>
+        <view class="activity-rule-text">参与者报名后需等待发起者审核；通过后才能查看群二维码。参与者可在活动开始前至少3小时取消报名，并需填写原因。</view>
+        <view class="activity-rule-text">活动开始前可下架活动，下架时需填写原因，系统会通知已报名和收藏用户；活动开始后不可下架。</view>
+        <view class="activity-rule-text">请勿发布违法违规、敏感、广告营销、虚假、骚扰、诈骗或诱导付费等内容。违规活动可能被下架，账号可能被限制或封禁。</view>
+        <view class="activity-rule-text">请维护友好、安全、真实的线下活动环境。建议公开页面只展示大概区域，具体地点和后续沟通在微信群内统一说明。</view>
       </view>
     </view>
 
@@ -247,6 +265,7 @@
         <text class="tag-popup-title">选择标签</text>
         <text class="tag-popup-close" bindtap="onCloseTagPicker">关闭</text>
       </view>
+      <view class="tag-popup-hint">请选择与您活动相关的标签，更容易为您的活动匹配合适的参与者。</view>
 
       <view class="tag-toolbar">
         <text class="tag-toolbar-text">已选 {{selectedTags.length}} / {{tagMax}}</text>
@@ -297,6 +316,9 @@
     round
     bind:close="onCloseTimePicker"
   >
+    <view wx:if="{{activeTimeField === 'start'}}" class="time-picker-hint">
+      请选在当前时间 3 个小时以上的时间，方便参与者安排时间。
+    </view>
     <van-picker
       show-toolbar
       title="{{timePickerTitle}}"

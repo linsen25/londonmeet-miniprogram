@@ -1,7 +1,7 @@
 const { API_BASE_URL, request } = require("../utils/request");
 
 const API_ORIGIN = API_BASE_URL.replace(/\/api\/?$/, "");
-const FALLBACK_AVATAR = "https://dummyimage.com/100x100/555555/ffffff.png&text=U";
+const FALLBACK_AVATAR = `${API_ORIGIN}/api/v1/uploads/image-proxy?publicId=v1782629106/londonmeet/defaultUser&format=png`;
 
 const ACTIVITY_ENDPOINTS = {
   create: "/v1/activities",
@@ -11,14 +11,21 @@ const ACTIVITY_ENDPOINTS = {
   myFavorites: "/v1/activities/me/favorites",
   myHistory: "/v1/activities/me/history",
   pendingReview: "/v1/activities/pending-review",
+  pendingReviewActivities: "/v1/activities/pending-review/activities",
+  activityReviewRegistrations: "/v1/activities/pending-review/activities/:id/registrations",
+  activityReviewBlacklist: "/v1/activities/pending-review/activities/:id/blacklist",
   approveRegistration: "/v1/activities/registrations/:id/approve",
   rejectRegistration: "/v1/activities/registrations/:id/reject",
+  blacklistRegistration: "/v1/activities/registrations/:id/blacklist",
+  unblockApplicant: "/v1/activities/blacklist/:id/unblock",
   detail: "/v1/activities/:id",
   apply: "/v1/activities/:id/apply",
   joinGroup: "/v1/activities/:id/join-group",
   cancelRegistration: "/v1/activities/:id/cancel-registration",
   favorite: "/v1/activities/:id/favorite",
   report: "/v1/activities/:id/report",
+  remindQr: "/v1/activities/:id/invite-qr/remind",
+  cancelActivity: "/v1/activities/:id/cancel",
   events: "/v1/activities/events",
   update: "/v1/activities/:id",
   updateQr: "/v1/activities/:id/invite-qr"
@@ -32,6 +39,13 @@ function resolveAssetUrl(url) {
   return url;
 }
 
+function buildThumbnailUrl(url, width = 640, height = 420) {
+  const resolved = resolveAssetUrl(url);
+  if (!resolved || resolved.indexOf("/api/v1/uploads/image-proxy") < 0) return resolved;
+  const joiner = resolved.indexOf("?") >= 0 ? "&" : "?";
+  return `${resolved}${joiner}width=${width}&height=${height}`;
+}
+
 function normalizePost(raw) {
   const post = raw || {};
 
@@ -40,6 +54,7 @@ function normalizePost(raw) {
     title: post.title || "",
     authorName: post.authorName || "",
     coverUrl: resolveAssetUrl(post.coverUrl || ""),
+    thumbnailUrl: buildThumbnailUrl(post.coverUrl || ""),
     avatarUrl: resolveAssetUrl(post.avatarUrl || ""),
     favoriteCount: Number(post.favoriteCount) || 0,
     favorited: !!post.favorited,
@@ -174,14 +189,39 @@ function normalizePendingReview(raw) {
     registrationId: item.registrationId,
     activityId: item.activityId,
     userId: item.userId,
+    displayId: item.displayId || "",
     activityTitle: item.activityTitle || "",
     nickname: item.nickname || "MeetFun User",
     avatarUrl: resolveAssetUrl(item.avatarUrl || ""),
     applicationText: item.applicationText || "",
+    status: item.status || "",
+    reviewReasonType: item.reviewReasonType || "",
+    reviewReasonText: item.reviewReasonText || "",
+    reviewedAt: Number(item.reviewedAt) || 0,
+    blacklistId: item.blacklistId,
+    blacklistedAt: Number(item.blacklistedAt) || 0,
     punctualRating: item.punctualRating == null ? null : Number(item.punctualRating),
     communicationRating: item.communicationRating == null ? null : Number(item.communicationRating),
     friendlyRating: item.friendlyRating == null ? null : Number(item.friendlyRating),
+    reviewCount: Number(item.reviewCount) || 0,
     appliedAt: Number(item.appliedAt) || 0
+  };
+}
+
+function normalizePendingReviewActivity(raw) {
+  const item = raw || {};
+  return {
+    activityId: item.activityId,
+    activityTitle: item.activityTitle || "",
+    startAt: Number(item.startAt) || 0,
+    endAt: Number(item.endAt) || 0,
+    locationText: item.locationText || "",
+    totalRegistrationCount: Number(item.totalRegistrationCount) || 0,
+    pendingCount: Number(item.pendingCount) || 0,
+    approvedCount: Number(item.approvedCount) || 0,
+    rejectedCount: Number(item.rejectedCount) || 0,
+    hasUnread: !!item.hasUnread,
+    latestAppliedAt: Number(item.latestAppliedAt) || 0
   };
 }
 
@@ -217,6 +257,14 @@ function cancelActivityRegistration(id, payload) {
   });
 }
 
+function cancelActivityByCreator(id, payload) {
+  return request({
+    url: ACTIVITY_ENDPOINTS.cancelActivity.replace(":id", id),
+    method: "POST",
+    data: payload || {}
+  }).then(normalizeActivityDetail);
+}
+
 function fetchPendingReviews() {
   return request({
     url: ACTIVITY_ENDPOINTS.pendingReview,
@@ -224,16 +272,55 @@ function fetchPendingReviews() {
   }).then((res) => (res || []).map(normalizePendingReview));
 }
 
-function approveActivityRegistration(id) {
+function fetchPendingReviewActivities() {
+  return request({
+    url: ACTIVITY_ENDPOINTS.pendingReviewActivities,
+    method: "GET"
+  }).then((res) => (res || []).map(normalizePendingReviewActivity));
+}
+
+function fetchActivityReviewRegistrations(id, status) {
+  return request({
+    url: ACTIVITY_ENDPOINTS.activityReviewRegistrations.replace(":id", id),
+    method: "GET",
+    data: { status: status || "all" }
+  }).then((res) => (res || []).map(normalizePendingReview));
+}
+
+function fetchActivityReviewBlacklist(id) {
+  return request({
+    url: ACTIVITY_ENDPOINTS.activityReviewBlacklist.replace(":id", id),
+    method: "GET"
+  }).then((res) => (res || []).map(normalizePendingReview));
+}
+
+function approveActivityRegistration(id, payload) {
   return request({
     url: ACTIVITY_ENDPOINTS.approveRegistration.replace(":id", id),
-    method: "POST"
+    method: "POST",
+    data: payload || {}
   });
 }
 
-function rejectActivityRegistration(id) {
+function rejectActivityRegistration(id, payload) {
   return request({
     url: ACTIVITY_ENDPOINTS.rejectRegistration.replace(":id", id),
+    method: "POST",
+    data: payload || {}
+  });
+}
+
+function blacklistActivityRegistration(id, payload) {
+  return request({
+    url: ACTIVITY_ENDPOINTS.blacklistRegistration.replace(":id", id),
+    method: "POST",
+    data: payload || {}
+  });
+}
+
+function unblockActivityApplicant(id) {
+  return request({
+    url: ACTIVITY_ENDPOINTS.unblockApplicant.replace(":id", id),
     method: "POST"
   });
 }
@@ -280,6 +367,13 @@ function reportActivity(id, reason) {
   });
 }
 
+function remindActivityQr(id) {
+  return request({
+    url: ACTIVITY_ENDPOINTS.remindQr.replace(":id", id),
+    method: "POST"
+  });
+}
+
 function recordActivityEvents(eventType, activityIds) {
   const ids = (activityIds || []).map(Number).filter(Boolean);
   if (!ids.length) return Promise.resolve();
@@ -294,20 +388,27 @@ module.exports = {
   ACTIVITY_ENDPOINTS,
   applyActivity,
   approveActivityRegistration,
+  cancelActivityByCreator,
   cancelActivityRegistration,
   createActivity,
   fetchActivityDetail,
+  fetchActivityReviewBlacklist,
+  fetchActivityReviewRegistrations,
   fetchActivityPosts,
   fetchFavoriteActivityPosts,
   fetchHistoryActivityPosts,
   fetchMyOngoingActivityPosts,
   fetchMyCreatedActivityPosts,
+  fetchPendingReviewActivities,
   fetchPendingReviews,
   joinActivityGroup,
+  blacklistActivityRegistration,
   resolveAssetUrl,
   rejectActivityRegistration,
   recordActivityEvents,
   reportActivity,
+  remindActivityQr,
+  unblockActivityApplicant,
   updateActivityFavorite,
   updateActivity,
   updateActivityQr

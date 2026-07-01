@@ -107,7 +107,15 @@
     font-size: 26rpx;
     font-weight: 600;
     color: #fff;
+    margin-bottom: 8rpx;
+  }
+
+  .upload-hint {
     margin-bottom: 16rpx;
+    color: rgba(255,255,255,0.58);
+    font-size: 23rpx;
+    font-weight: 650;
+    line-height: 1.45;
   }
   
   /* =========================
@@ -275,6 +283,22 @@
   .bottom-card {
     padding: 18rpx;
   }
+
+  .map-preview-tip {
+    margin: 2rpx 4rpx 12rpx;
+    color: rgba(255, 255, 255, 0.58);
+    font-size: 24rpx;
+    font-weight: 700;
+    line-height: 1.45;
+  }
+
+  .map-privacy-tip {
+    margin: -4rpx 4rpx 14rpx;
+    color: rgba(255, 255, 255, 0.48);
+    font-size: 22rpx;
+    font-weight: 650;
+    line-height: 1.45;
+  }
   
   .map-preview {
     width: 100%;
@@ -329,6 +353,20 @@
     word-break: break-all;
   }
 
+  .map-retry {
+    align-self: flex-start;
+    min-width: 150rpx;
+    height: 52rpx;
+    padding: 0 20rpx;
+    border-radius: 999rpx;
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    font-size: 23rpx;
+    font-weight: 800;
+    line-height: 52rpx;
+    text-align: center;
+  }
+
   .address-help-row {
     height: 58rpx;
     display: flex;
@@ -351,10 +389,10 @@
   
   /* 地址行：你已经调大过，这里保�?*/
   .address-row {
-    min-height: 144rpx;
+    min-height: 84rpx;
     border-radius: 18rpx;
     background: rgba(255, 255, 255, 0.05);
-    padding: 18rpx 18rpx;
+    padding: 18rpx;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -365,7 +403,7 @@
     flex: 1;
     min-width: 0;
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     gap: 10rpx;
   }
 
@@ -374,6 +412,8 @@
     font-size: 28rpx;
     font-weight: 700;
     flex-shrink: 0;
+    height: 48rpx;
+    line-height: 48rpx;
   }
 
   .help-button {
@@ -392,12 +432,14 @@
   .address-input {
     flex: 1;
     min-width: 0;
-    min-height: 40rpx;
-    max-height: 144rpx;
+    min-height: 44rpx;
     color: rgba(255, 255, 255, 0.85);
     font-size: 24rpx;
-    line-height: 36rpx;
+    line-height: 42rpx;
+    padding-top: 3rpx;
+    box-sizing: border-box;
     word-break: break-all;
+    overflow-y: auto;
   }
   
   .address-action {
@@ -408,6 +450,7 @@
     background: rgba(255, 255, 255, 0.12);
     color: #fff;
     font-size: 22rpx;
+    line-height: 48rpx;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -442,6 +485,37 @@
     color: rgba(255, 255, 255, 0.6);
     font-size: 24rpx;
   }
+
+  .activity-rule-box {
+    margin-top: 22rpx;
+    padding: 20rpx 22rpx;
+    border-radius: 18rpx;
+    background: rgba(255, 255, 255, 0.055);
+    border: 1rpx solid rgba(255, 255, 255, 0.08);
+  }
+
+  .activity-rule-title {
+    color: rgba(255, 255, 255, 0.92);
+    font-size: 27rpx;
+    font-weight: 700;
+    margin-bottom: 12rpx;
+  }
+
+  .activity-rule-text {
+    color: rgba(255, 255, 255, 0.62);
+    font-size: 23rpx;
+    line-height: 1.55;
+    margin-top: 8rpx;
+  }
+
+  .time-picker-hint {
+    padding: 22rpx 32rpx 6rpx;
+    background: #fff;
+    color: rgba(0, 0, 0, 0.52);
+    font-size: 24rpx;
+    line-height: 1.45;
+    text-align: center;
+  }
   
   /* 提交按钮区域 */
   .submit-wrap {
@@ -473,6 +547,13 @@
     font-size: 32rpx;
     font-weight: 700;
   }
+
+  .tag-popup-hint {
+    margin-top: -4rpx;
+    color: rgba(255, 255, 255, 0.56);
+    font-size: 24rpx;
+    line-height: 1.45;
+   }
   
   .tag-popup-close {
     color: rgba(255, 255, 255, 0.7);
@@ -622,20 +703,6 @@
   .van-uploader__preview {
     overflow: hidden !important;
     border-radius: 18rpx !important;
-  }
-  
-  .van-search {
-    background: rgb(33, 33, 33) !important;
-  }
-  
-  .van-search__content {
-    background: rgb(46, 46, 46) !important;
-    border-radius: 18rpx !important;
-  }
-  
-  .van-field__control,
-  .van-search__field {
-    color: #fff !important;
   }
   
   /* =========================
